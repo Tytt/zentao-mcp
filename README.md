@@ -47,7 +47,7 @@
   "mcpServers": {
     "zentao": {
       "command": "npx",
-      "args": ["-y", "@anthropic/zentao-mcp"],
+      "args": ["-y", "@tytt/zentao-mcp"],
       "env": {
         "ZENTAO_URL": "https://your-zentao-server.com",
         "ZENTAO_ACCOUNT": "your_username",
@@ -68,7 +68,7 @@
   "mcpServers": {
     "zentao": {
       "command": "npx",
-      "args": ["-y", "@anthropic/zentao-mcp"],
+      "args": ["-y", "@tytt/zentao-mcp"],
       "env": {
         "ZENTAO_URL": "https://your-zentao-server.com",
         "ZENTAO_ACCOUNT": "your_username",
@@ -83,7 +83,7 @@
 ### 方式二：全局安装
 
 ```bash
-npm install -g @anthropic/zentao-mcp
+npm install -g @tytt/zentao-mcp
 ```
 
 然后在 MCP 配置中使用：
@@ -109,7 +109,7 @@ npm install -g @anthropic/zentao-mcp
 1. 克隆项目并安装依赖：
 
 ```bash
-git clone https://github.com/anthropic/zentao-mcp.git
+git clone https://github.com/Tytt/zentao-mcp.git
 cd zentao-mcp
 npm install
 npm run build
