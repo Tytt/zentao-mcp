@@ -44113,6 +44113,15 @@ var ZentaoClient = class {
 };
 
 // dist/index.js
+var originalStdoutWrite = process.stdout.write.bind(process.stdout);
+process.stdout.write = (chunk, encodingOrCallback, callback) => {
+  const str = typeof chunk === "string" ? chunk : chunk.toString();
+  if (str.trimStart().startsWith("{") || str.trimStart().startsWith("Content-Length:")) {
+    return originalStdoutWrite(chunk, encodingOrCallback, callback);
+  }
+  process.stderr.write(chunk, encodingOrCallback, callback);
+  return true;
+};
 import_dotenv.default.config();
 var ZENTAO_URL = process.env.ZENTAO_URL;
 var ZENTAO_ACCOUNT = process.env.ZENTAO_ACCOUNT;

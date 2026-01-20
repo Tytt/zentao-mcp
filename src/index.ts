@@ -4,6 +4,20 @@
  * 提供 Bug 和需求的增删改查工具给 AI 使用
  */
 
+// 重写 process.stdout.write，将非 JSON-RPC 的输出重定向到 stderr
+// 这是为了防止 npx 等工具的输出污染 MCP 协议通信
+const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+process.stdout.write = (chunk: any, encodingOrCallback?: any, callback?: any): boolean => {
+  const str = typeof chunk === 'string' ? chunk : chunk.toString();
+  // JSON-RPC 消息以 { 开头，允许通过；其他内容重定向到 stderr
+  if (str.trimStart().startsWith('{') || str.trimStart().startsWith('Content-Length:')) {
+    return originalStdoutWrite(chunk, encodingOrCallback, callback);
+  }
+  // 非协议消息重定向到 stderr
+  process.stderr.write(chunk, encodingOrCallback, callback);
+  return true;
+};
+
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
