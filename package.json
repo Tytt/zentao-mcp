@@ -9,7 +9,8 @@
   "files": [
     "dist",
     "README.md",
-    "env.example"
+    "env.example",
+    ".npmrc"
   ],
   "scripts": {
     "build": "tsc && npm run bundle",
