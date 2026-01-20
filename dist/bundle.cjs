@@ -44114,13 +44114,32 @@ var ZentaoClient = class {
 
 // dist/index.js
 var originalStdoutWrite = process.stdout.write.bind(process.stdout);
+var originalStderrWrite = process.stderr.write.bind(process.stderr);
+var isMcpMessage = (str) => {
+  const trimmed = str.trimStart();
+  return trimmed.startsWith("{") || trimmed.startsWith("Content-Length:");
+};
 process.stdout.write = (chunk, encodingOrCallback, callback) => {
   const str = typeof chunk === "string" ? chunk : chunk.toString();
-  if (str.trimStart().startsWith("{") || str.trimStart().startsWith("Content-Length:")) {
+  if (isMcpMessage(str)) {
     return originalStdoutWrite(chunk, encodingOrCallback, callback);
   }
-  process.stderr.write(chunk, encodingOrCallback, callback);
+  if (typeof encodingOrCallback === "function")
+    encodingOrCallback();
+  else if (callback)
+    callback();
   return true;
+};
+process.stderr.write = (chunk, encodingOrCallback, callback) => {
+  const str = typeof chunk === "string" ? chunk : chunk.toString();
+  if (str.includes("dotenv") || str.includes("injecting env") || str.includes("dotenvx")) {
+    if (typeof encodingOrCallback === "function")
+      encodingOrCallback();
+    else if (callback)
+      callback();
+    return true;
+  }
+  return originalStderrWrite(chunk, encodingOrCallback, callback);
 };
 import_dotenv.default.config();
 var ZENTAO_URL = process.env.ZENTAO_URL;
@@ -45400,7 +45419,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
   const transport = new StdioServerTransport();
   await server.connect(transport);
-  console.error("\u7985\u9053 MCP Server \u5DF2\u542F\u52A8");
 }
 main().catch((error2) => {
   console.error("\u542F\u52A8\u5931\u8D25:", error2);

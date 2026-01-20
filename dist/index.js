@@ -3,18 +3,39 @@
  * 禅道 MCP Server
  * 提供 Bug 和需求的增删改查工具给 AI 使用
  */
-// 重写 process.stdout.write，将非 JSON-RPC 的输出重定向到 stderr
-// 这是为了防止 npx 等工具的输出污染 MCP 协议通信
+// 重写 stdout/stderr，过滤非 MCP 协议的输出（如 npx/dotenv 的日志）
 const originalStdoutWrite = process.stdout.write.bind(process.stdout);
+const originalStderrWrite = process.stderr.write.bind(process.stderr);
+/** 检查是否为 MCP 协议消息 */
+const isMcpMessage = (str) => {
+    const trimmed = str.trimStart();
+    return trimmed.startsWith('{') || trimmed.startsWith('Content-Length:');
+};
+// stdout: 只允许 MCP 协议消息通过，其他静默丢弃
 process.stdout.write = (chunk, encodingOrCallback, callback) => {
     const str = typeof chunk === 'string' ? chunk : chunk.toString();
-    // JSON-RPC 消息以 { 开头，允许通过；其他内容重定向到 stderr
-    if (str.trimStart().startsWith('{') || str.trimStart().startsWith('Content-Length:')) {
+    if (isMcpMessage(str)) {
         return originalStdoutWrite(chunk, encodingOrCallback, callback);
     }
-    // 非协议消息重定向到 stderr
-    process.stderr.write(chunk, encodingOrCallback, callback);
+    // 静默丢弃非协议消息
+    if (typeof encodingOrCallback === 'function')
+        encodingOrCallback();
+    else if (callback)
+        callback();
     return true;
+};
+// stderr: 过滤掉 dotenv 等第三方库的输出
+process.stderr.write = (chunk, encodingOrCallback, callback) => {
+    const str = typeof chunk === 'string' ? chunk : chunk.toString();
+    // 过滤掉 dotenv 的日志
+    if (str.includes('dotenv') || str.includes('injecting env') || str.includes('dotenvx')) {
+        if (typeof encodingOrCallback === 'function')
+            encodingOrCallback();
+        else if (callback)
+            callback();
+        return true;
+    }
+    return originalStderrWrite(chunk, encodingOrCallback, callback);
 };
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
@@ -1309,7 +1330,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.error('禅道 MCP Server 已启动');
 }
 main().catch((error) => {
     console.error('启动失败:', error);
