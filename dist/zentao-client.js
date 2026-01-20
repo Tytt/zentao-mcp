@@ -460,37 +460,6 @@ export class ZentaoClient {
         });
         return response.data;
     }
-    /**
-     * 修改测试用例
-     * @param params - 修改测试用例参数
-     * @returns 修改后的测试用例
-     */
-    async updateTestCase(params) {
-        await this.ensureLogin();
-        const updateData = {};
-        if (params.title !== undefined)
-            updateData.title = params.title;
-        if (params.type !== undefined)
-            updateData.type = params.type;
-        if (params.steps !== undefined)
-            updateData.steps = params.steps;
-        if (params.branch !== undefined)
-            updateData.branch = params.branch;
-        if (params.module !== undefined)
-            updateData.module = params.module;
-        if (params.story !== undefined)
-            updateData.story = params.story;
-        if (params.stage !== undefined)
-            updateData.stage = params.stage;
-        if (params.precondition !== undefined)
-            updateData.precondition = params.precondition;
-        if (params.pri !== undefined)
-            updateData.pri = params.pri;
-        if (params.keywords !== undefined)
-            updateData.keywords = params.keywords;
-        const response = await this.http.put(`/api.php/v1/testcases/${params.id}`, updateData);
-        return response.data;
-    }
     // ==================== Bug 更新相关方法 ====================
     /**
      * 更新 Bug
@@ -1395,47 +1364,6 @@ export class ZentaoClient {
             updateData.whitelist = params.whitelist;
         try {
             const response = await this.http.put(`/api.php/v1/executions/${params.id}`, updateData);
-            return response.data.data || response.data;
-        }
-        catch {
-            return null;
-        }
-    }
-    // ==================== 测试单相关方法 ====================
-    /**
-     * 获取测试单列表
-     * @param productID - 产品 ID (可选)
-     * @param limit - 返回数量限制
-     * @returns 测试单列表
-     */
-    async getTestTasks(productID, limit = 100) {
-        await this.ensureLogin();
-        let url = `/api.php/v1/testtasks?limit=${limit}`;
-        if (productID !== undefined) {
-            url += `&product=${productID}`;
-        }
-        const response = await this.http.get(url);
-        return response.data.data || response.data.testtasks || [];
-    }
-    /**
-     * 获取项目测试单列表
-     * @param projectID - 项目 ID
-     * @returns 测试单列表
-     */
-    async getProjectTestTasks(projectID) {
-        await this.ensureLogin();
-        const response = await this.http.get(`/api.php/v1/projects/${projectID}/testtasks`);
-        return response.data.data || response.data.testtasks || [];
-    }
-    /**
-     * 获取测试单详情
-     * @param testtaskID - 测试单 ID
-     * @returns 测试单详情
-     */
-    async getTestTask(testtaskID) {
-        await this.ensureLogin();
-        try {
-            const response = await this.http.get(`/api.php/v1/testtasks/${testtaskID}`);
             return response.data.data || response.data;
         }
         catch {

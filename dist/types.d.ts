@@ -292,31 +292,6 @@ export interface CreateTestCaseParams {
     /** 关键词 */
     keywords?: string;
 }
-/** 修改测试用例参数 */
-export interface UpdateTestCaseParams {
-    /** 用例 ID */
-    id: number;
-    /** 用例标题 */
-    title?: string;
-    /** 用例类型 */
-    type?: TestCaseType;
-    /** 用例步骤 */
-    steps?: TestCaseStep[];
-    /** 所属分支 */
-    branch?: number;
-    /** 所属模块 */
-    module?: number;
-    /** 所属需求 */
-    story?: number;
-    /** 适用阶段 */
-    stage?: TestCaseStage;
-    /** 前置条件 */
-    precondition?: string;
-    /** 优先级 1-4 */
-    pri?: number;
-    /** 关键词 */
-    keywords?: string;
-}
 /** 测试用例列表响应 */
 export interface TestCaseListResponse {
     /** 当前页数 */
@@ -839,30 +814,6 @@ export interface UpdateExecutionParams {
     acl?: string;
     /** 白名单 */
     whitelist?: string[];
-}
-/** 测试单状态 */
-export type TestTaskStatus = 'wait' | 'doing' | 'done' | 'blocked';
-/** 测试单类型 */
-export type TestTaskType = 'integrate' | 'system' | 'acceptance' | 'performance' | 'safety';
-/** 测试单信息 */
-export interface TestTask {
-    id: number;
-    project?: number;
-    product: number;
-    name: string;
-    execution?: number;
-    build?: number | string;
-    type?: TestTaskType;
-    owner?: string;
-    pri?: number;
-    begin?: string;
-    end?: string;
-    desc?: string;
-    status: TestTaskStatus;
-    productName?: string;
-    executionName?: string;
-    buildName?: string;
-    branch?: number;
 }
 /** 创建产品参数 */
 export interface CreateProductParams {

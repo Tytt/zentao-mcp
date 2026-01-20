@@ -111,24 +111,6 @@ const tools: Tool[] = [
     },
   },
   {
-    name: 'zentao_get_assigned_bugs',
-    description: '获取指派给某人的 Bug 列表',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        account: {
-          type: 'string',
-          description: '用户账号',
-        },
-        limit: {
-          type: 'number',
-          description: '返回数量限制，默认 100',
-        },
-      },
-      required: ['account'],
-    },
-  },
-  {
     name: 'zentao_get_bug',
     description: '获取 Bug 详情',
     inputSchema: {
@@ -273,46 +255,6 @@ const tools: Tool[] = [
       required: ['id'],
     },
   },
-  {
-    name: 'zentao_activate_bug',
-    description: '激活 Bug（重新打开已关闭的 Bug）',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        id: {
-          type: 'number',
-          description: 'Bug ID',
-        },
-        assignedTo: {
-          type: 'string',
-          description: '指派给（用户账号）',
-        },
-        comment: {
-          type: 'string',
-          description: '备注',
-        },
-      },
-      required: ['id'],
-    },
-  },
-  {
-    name: 'zentao_confirm_bug',
-    description: '确认 Bug',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        bugID: {
-          type: 'number',
-          description: 'Bug ID',
-        },
-        assignedTo: {
-          type: 'string',
-          description: '指派给（用户账号）',
-        },
-      },
-      required: ['bugID'],
-    },
-  },
 
   // 需求相关工具
   {
@@ -438,28 +380,6 @@ const tools: Tool[] = [
         },
       },
       required: ['id', 'closedReason'],
-    },
-  },
-  {
-    name: 'zentao_activate_story',
-    description: '激活需求（重新打开已关闭的需求）',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        storyID: {
-          type: 'number',
-          description: '需求 ID',
-        },
-        assignedTo: {
-          type: 'string',
-          description: '指派给（用户账号）',
-        },
-        comment: {
-          type: 'string',
-          description: '备注',
-        },
-      },
-      required: ['storyID'],
     },
   },
 
@@ -593,73 +513,6 @@ const tools: Tool[] = [
       required: ['product', 'title', 'type', 'steps'],
     },
   },
-  {
-    name: 'zentao_update_testcase',
-    description: '修改测试用例',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        id: {
-          type: 'number',
-          description: '用例 ID',
-        },
-        title: {
-          type: 'string',
-          description: '用例标题',
-        },
-        type: {
-          type: 'string',
-          enum: ['feature', 'performance', 'config', 'install', 'security', 'interface', 'unit', 'other'],
-          description: '用例类型',
-        },
-        steps: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              desc: {
-                type: 'string',
-                description: '步骤描述',
-              },
-              expect: {
-                type: 'string',
-                description: '期望结果',
-              },
-            },
-            required: ['desc', 'expect'],
-          },
-          description: '用例步骤',
-        },
-        pri: {
-          type: 'number',
-          enum: [1, 2, 3, 4],
-          description: '优先级',
-        },
-        stage: {
-          type: 'string',
-          enum: ['unittest', 'feature', 'intergrate', 'system', 'smoke', 'bvt'],
-          description: '适用阶段',
-        },
-        precondition: {
-          type: 'string',
-          description: '前置条件',
-        },
-        module: {
-          type: 'number',
-          description: '所属模块 ID',
-        },
-        story: {
-          type: 'number',
-          description: '相关需求 ID',
-        },
-        keywords: {
-          type: 'string',
-          description: '关键词',
-        },
-      },
-      required: ['id'],
-    },
-  },
   // Bug 更新相关工具
   {
     name: 'zentao_update_bug',
@@ -698,20 +551,6 @@ const tools: Tool[] = [
       required: ['id'],
     },
   },
-  {
-    name: 'zentao_change_story',
-    description: '变更需求（修改标题、描述、验收标准，会导致状态变为 changed）',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        id: { type: 'number', description: '需求 ID' },
-        title: { type: 'string', description: '标题' },
-        spec: { type: 'string', description: '描述' },
-        verify: { type: 'string', description: '验收标准' },
-      },
-      required: ['id'],
-    },
-  },
   // 产品详情/创建/更新相关工具
   {
     name: 'zentao_get_product',
@@ -724,43 +563,6 @@ const tools: Tool[] = [
       required: ['productID'],
     },
   },
-  {
-    name: 'zentao_create_product',
-    description: '创建产品',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', description: '产品名称' },
-        code: { type: 'string', description: '产品代号' },
-        program: { type: 'number', description: '所属项目集 ID' },
-        PO: { type: 'string', description: '产品负责人账号' },
-        QD: { type: 'string', description: '测试负责人账号' },
-        RD: { type: 'string', description: '发布负责人账号' },
-        type: { type: 'string', enum: ['normal', 'branch', 'platform'], description: '产品类型' },
-        desc: { type: 'string', description: '产品描述' },
-        acl: { type: 'string', enum: ['open', 'private'], description: '访问控制' },
-      },
-      required: ['name', 'code'],
-    },
-  },
-  {
-    name: 'zentao_update_product',
-    description: '更新产品信息',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        id: { type: 'number', description: '产品 ID' },
-        name: { type: 'string', description: '产品名称' },
-        code: { type: 'string', description: '产品代号' },
-        desc: { type: 'string', description: '产品描述' },
-        PO: { type: 'string', description: '产品负责人账号' },
-        QD: { type: 'string', description: '测试负责人账号' },
-        RD: { type: 'string', description: '发布负责人账号' },
-        status: { type: 'string', description: '产品状态' },
-      },
-      required: ['id'],
-    },
-  },
   // 项目详情/创建/更新相关工具
   {
     name: 'zentao_get_project',
@@ -771,39 +573,6 @@ const tools: Tool[] = [
         projectID: { type: 'number', description: '项目 ID' },
       },
       required: ['projectID'],
-    },
-  },
-  {
-    name: 'zentao_create_project',
-    description: '创建项目',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        name: { type: 'string', description: '项目名称' },
-        code: { type: 'string', description: '项目代号' },
-        begin: { type: 'string', description: '开始日期 YYYY-MM-DD' },
-        end: { type: 'string', description: '结束日期 YYYY-MM-DD' },
-        products: { type: 'array', items: { type: 'number' }, description: '关联产品 ID 列表' },
-        model: { type: 'string', enum: ['scrum', 'waterfall'], description: '项目模型' },
-        parent: { type: 'number', description: '所属项目集 ID' },
-      },
-      required: ['name', 'code', 'begin', 'end', 'products'],
-    },
-  },
-  {
-    name: 'zentao_update_project',
-    description: '更新项目信息',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        id: { type: 'number', description: '项目 ID' },
-        name: { type: 'string', description: '项目名称' },
-        code: { type: 'string', description: '项目代号' },
-        PM: { type: 'string', description: '项目负责人账号' },
-        desc: { type: 'string', description: '项目描述' },
-        days: { type: 'number', description: '可用工作日' },
-      },
-      required: ['id'],
     },
   },
   // 用户相关工具
@@ -836,75 +605,6 @@ const tools: Tool[] = [
       type: 'object',
       properties: {},
       required: [],
-    },
-  },
-  {
-    name: 'zentao_create_user',
-    description: '创建用户',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        account: { type: 'string', description: '用户账号' },
-        password: { type: 'string', description: '密码' },
-        realname: { type: 'string', description: '真实姓名' },
-        gender: { type: 'string', enum: ['m', 'f'], description: '性别' },
-        role: { type: 'string', description: '角色' },
-        dept: { type: 'number', description: '部门 ID' },
-        email: { type: 'string', description: '邮箱' },
-        mobile: { type: 'string', description: '手机号' },
-      },
-      required: ['account', 'password'],
-    },
-  },
-  {
-    name: 'zentao_update_user',
-    description: '更新用户信息',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        id: { type: 'number', description: '用户 ID' },
-        realname: { type: 'string', description: '真实姓名' },
-        role: { type: 'string', description: '角色' },
-        dept: { type: 'number', description: '部门 ID' },
-        email: { type: 'string', description: '邮箱' },
-        mobile: { type: 'string', description: '手机号' },
-      },
-      required: ['id'],
-    },
-  },
-  // 测试单相关工具
-  {
-    name: 'zentao_get_testtasks',
-    description: '获取测试单列表',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        productID: { type: 'number', description: '产品 ID（可选）' },
-        limit: { type: 'number', description: '返回数量限制，默认 100' },
-      },
-      required: [],
-    },
-  },
-  {
-    name: 'zentao_get_project_testtasks',
-    description: '获取项目测试单列表',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        projectID: { type: 'number', description: '项目 ID' },
-      },
-      required: ['projectID'],
-    },
-  },
-  {
-    name: 'zentao_get_testtask',
-    description: '获取测试单详情',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        testtaskID: { type: 'number', description: '测试单 ID' },
-      },
-      required: ['testtaskID'],
     },
   },
 ];
@@ -944,12 +644,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           limit?: number;
         };
         result = await zentaoClient.getBugs(productID, browseType, limit);
-        break;
-      }
-
-      case 'zentao_get_assigned_bugs': {
-        const { account, limit } = args as { account: string; limit?: number };
-        result = await zentaoClient.getAssignedBugs(account, limit);
         break;
       }
 
@@ -1038,30 +732,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
 
-      case 'zentao_activate_bug': {
-        const { id, assignedTo, comment } = args as {
-          id: number;
-          assignedTo?: string;
-          comment?: string;
-        };
-        const success = await zentaoClient.activateBug({ id, assignedTo, comment });
-        result = {
-          success,
-          message: success ? `Bug #${id} 已激活` : `Bug #${id} 激活失败`,
-        };
-        break;
-      }
-
-      case 'zentao_confirm_bug': {
-        const { bugID, assignedTo } = args as { bugID: number; assignedTo?: string };
-        const success = await zentaoClient.confirmBug(bugID, assignedTo);
-        result = {
-          success,
-          message: success ? `Bug #${bugID} 已确认` : `Bug #${bugID} 确认失败`,
-        };
-        break;
-      }
-
       // 需求相关
       case 'zentao_get_stories': {
         const { productID, browseType, limit } = args as {
@@ -1134,20 +804,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
 
-      case 'zentao_activate_story': {
-        const { storyID, assignedTo, comment } = args as {
-          storyID: number;
-          assignedTo?: string;
-          comment?: string;
-        };
-        const success = await zentaoClient.activateStory(storyID, assignedTo, comment);
-        result = {
-          success,
-          message: success ? `需求 #${storyID} 已激活` : `需求 #${storyID} 激活失败`,
-        };
-        break;
-      }
-
       // 产品和项目相关
       case 'zentao_get_products': {
         const { limit } = (args as { limit?: number }) || {};
@@ -1210,35 +866,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
 
-      case 'zentao_update_testcase': {
-        const { id, title, type, steps, pri, stage, precondition, module, story, keywords } =
-          args as {
-            id: number;
-            title?: string;
-            type?: TestCaseType;
-            steps?: TestCaseStep[];
-            pri?: number;
-            stage?: TestCaseStage;
-            precondition?: string;
-            module?: number;
-            story?: number;
-            keywords?: string;
-          };
-        result = await zentaoClient.updateTestCase({
-          id,
-          title,
-          type,
-          steps,
-          pri,
-          stage,
-          precondition,
-          module,
-          story,
-          keywords,
-        });
-        break;
-      }
-
       // Bug 更新相关
       case 'zentao_update_bug': {
         const { id, title, severity, pri, type, steps, module, deadline } = args as {
@@ -1283,23 +910,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
 
-      case 'zentao_change_story': {
-        const { id, title, spec, verify } = args as {
-          id: number;
-          title?: string;
-          spec?: string;
-          verify?: string;
-        };
-        result = await zentaoClient.changeStory({ id, title, spec, verify });
-        if (!result) {
-          return {
-            content: [{ type: 'text', text: `需求 #${id} 变更失败` }],
-            isError: true,
-          };
-        }
-        break;
-      }
-
       // 产品详情/创建/更新相关
       case 'zentao_get_product': {
         const { productID } = args as { productID: number };
@@ -1307,43 +917,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!result) {
           return {
             content: [{ type: 'text', text: `产品 #${productID} 不存在或无权限查看` }],
-            isError: true,
-          };
-        }
-        break;
-      }
-
-      case 'zentao_create_product': {
-        const { name, code, program, PO, QD, RD, type, desc, acl } = args as {
-          name: string;
-          code: string;
-          program?: number;
-          PO?: string;
-          QD?: string;
-          RD?: string;
-          type?: 'normal' | 'branch' | 'platform';
-          desc?: string;
-          acl?: 'open' | 'private';
-        };
-        result = await zentaoClient.createProduct({ name, code, program, PO, QD, RD, type, desc, acl });
-        break;
-      }
-
-      case 'zentao_update_product': {
-        const { id, name, code, desc, PO, QD, RD, status } = args as {
-          id: number;
-          name?: string;
-          code?: string;
-          desc?: string;
-          PO?: string;
-          QD?: string;
-          RD?: string;
-          status?: string;
-        };
-        result = await zentaoClient.updateProduct({ id, name, code, desc, PO, QD, RD, status });
-        if (!result) {
-          return {
-            content: [{ type: 'text', text: `产品 #${id} 更新失败` }],
             isError: true,
           };
         }
@@ -1362,40 +935,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
         break;
       }
-
-      case 'zentao_create_project': {
-        const { name, code, begin, end, products, model, parent } = args as {
-          name: string;
-          code: string;
-          begin: string;
-          end: string;
-          products: number[];
-          model?: 'scrum' | 'waterfall';
-          parent?: number;
-        };
-        result = await zentaoClient.createProject({ name, code, begin, end, products, model, parent });
-        break;
-      }
-
-      case 'zentao_update_project': {
-        const { id, name, code, PM, desc, days } = args as {
-          id: number;
-          name?: string;
-          code?: string;
-          PM?: string;
-          desc?: string;
-          days?: number;
-        };
-        result = await zentaoClient.updateProject({ id, name, code, PM, desc, days });
-        if (!result) {
-          return {
-            content: [{ type: 'text', text: `项目 #${id} 更新失败` }],
-            isError: true,
-          };
-        }
-        break;
-      }
-
 
       // 用户相关
       case 'zentao_get_users': {
@@ -1421,67 +960,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!result) {
           return {
             content: [{ type: 'text', text: '获取当前用户信息失败' }],
-            isError: true,
-          };
-        }
-        break;
-      }
-
-      case 'zentao_create_user': {
-        const { account, password, realname, gender, role, dept, email, mobile } = args as {
-          account: string;
-          password: string;
-          realname?: string;
-          gender?: 'm' | 'f';
-          role?: string;
-          dept?: number;
-          email?: string;
-          mobile?: string;
-        };
-        result = await zentaoClient.createUser({ account, password, realname, gender, role, dept, email, mobile });
-        break;
-      }
-
-      case 'zentao_update_user': {
-        const { id, realname, role, dept, email, mobile } = args as {
-          id: number;
-          realname?: string;
-          role?: string;
-          dept?: number;
-          email?: string;
-          mobile?: string;
-        };
-        result = await zentaoClient.updateUser({ id, realname, role, dept, email, mobile });
-        if (!result) {
-          return {
-            content: [{ type: 'text', text: `用户 #${id} 更新失败` }],
-            isError: true,
-          };
-        }
-        break;
-      }
-
-
-
-      // 测试单相关
-      case 'zentao_get_testtasks': {
-        const { productID, limit } = (args as { productID?: number; limit?: number }) || {};
-        result = await zentaoClient.getTestTasks(productID, limit);
-        break;
-      }
-
-      case 'zentao_get_project_testtasks': {
-        const { projectID } = args as { projectID: number };
-        result = await zentaoClient.getProjectTestTasks(projectID);
-        break;
-      }
-
-      case 'zentao_get_testtask': {
-        const { testtaskID } = args as { testtaskID: number };
-        result = await zentaoClient.getTestTask(testtaskID);
-        if (!result) {
-          return {
-            content: [{ type: 'text', text: `测试单 #${testtaskID} 不存在或无权限查看` }],
             isError: true,
           };
         }

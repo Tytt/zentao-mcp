@@ -43141,37 +43141,6 @@ var ZentaoClient = class {
     });
     return response.data;
   }
-  /**
-   * 修改测试用例
-   * @param params - 修改测试用例参数
-   * @returns 修改后的测试用例
-   */
-  async updateTestCase(params) {
-    await this.ensureLogin();
-    const updateData = {};
-    if (params.title !== void 0)
-      updateData.title = params.title;
-    if (params.type !== void 0)
-      updateData.type = params.type;
-    if (params.steps !== void 0)
-      updateData.steps = params.steps;
-    if (params.branch !== void 0)
-      updateData.branch = params.branch;
-    if (params.module !== void 0)
-      updateData.module = params.module;
-    if (params.story !== void 0)
-      updateData.story = params.story;
-    if (params.stage !== void 0)
-      updateData.stage = params.stage;
-    if (params.precondition !== void 0)
-      updateData.precondition = params.precondition;
-    if (params.pri !== void 0)
-      updateData.pri = params.pri;
-    if (params.keywords !== void 0)
-      updateData.keywords = params.keywords;
-    const response = await this.http.put(`/api.php/v1/testcases/${params.id}`, updateData);
-    return response.data;
-  }
   // ==================== Bug 更新相关方法 ====================
   /**
    * 更新 Bug
@@ -44058,46 +44027,6 @@ var ZentaoClient = class {
       return null;
     }
   }
-  // ==================== 测试单相关方法 ====================
-  /**
-   * 获取测试单列表
-   * @param productID - 产品 ID (可选)
-   * @param limit - 返回数量限制
-   * @returns 测试单列表
-   */
-  async getTestTasks(productID, limit = 100) {
-    await this.ensureLogin();
-    let url3 = `/api.php/v1/testtasks?limit=${limit}`;
-    if (productID !== void 0) {
-      url3 += `&product=${productID}`;
-    }
-    const response = await this.http.get(url3);
-    return response.data.data || response.data.testtasks || [];
-  }
-  /**
-   * 获取项目测试单列表
-   * @param projectID - 项目 ID
-   * @returns 测试单列表
-   */
-  async getProjectTestTasks(projectID) {
-    await this.ensureLogin();
-    const response = await this.http.get(`/api.php/v1/projects/${projectID}/testtasks`);
-    return response.data.data || response.data.testtasks || [];
-  }
-  /**
-   * 获取测试单详情
-   * @param testtaskID - 测试单 ID
-   * @returns 测试单详情
-   */
-  async getTestTask(testtaskID) {
-    await this.ensureLogin();
-    try {
-      const response = await this.http.get(`/api.php/v1/testtasks/${testtaskID}`);
-      return response.data.data || response.data;
-    } catch {
-      return null;
-    }
-  }
 };
 
 // dist/index.js
@@ -44171,24 +44100,6 @@ var tools = [
         }
       },
       required: ["productID"]
-    }
-  },
-  {
-    name: "zentao_get_assigned_bugs",
-    description: "\u83B7\u53D6\u6307\u6D3E\u7ED9\u67D0\u4EBA\u7684 Bug \u5217\u8868",
-    inputSchema: {
-      type: "object",
-      properties: {
-        account: {
-          type: "string",
-          description: "\u7528\u6237\u8D26\u53F7"
-        },
-        limit: {
-          type: "number",
-          description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100"
-        }
-      },
-      required: ["account"]
     }
   },
   {
@@ -44336,46 +44247,6 @@ var tools = [
       required: ["id"]
     }
   },
-  {
-    name: "zentao_activate_bug",
-    description: "\u6FC0\u6D3B Bug\uFF08\u91CD\u65B0\u6253\u5F00\u5DF2\u5173\u95ED\u7684 Bug\uFF09",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: {
-          type: "number",
-          description: "Bug ID"
-        },
-        assignedTo: {
-          type: "string",
-          description: "\u6307\u6D3E\u7ED9\uFF08\u7528\u6237\u8D26\u53F7\uFF09"
-        },
-        comment: {
-          type: "string",
-          description: "\u5907\u6CE8"
-        }
-      },
-      required: ["id"]
-    }
-  },
-  {
-    name: "zentao_confirm_bug",
-    description: "\u786E\u8BA4 Bug",
-    inputSchema: {
-      type: "object",
-      properties: {
-        bugID: {
-          type: "number",
-          description: "Bug ID"
-        },
-        assignedTo: {
-          type: "string",
-          description: "\u6307\u6D3E\u7ED9\uFF08\u7528\u6237\u8D26\u53F7\uFF09"
-        }
-      },
-      required: ["bugID"]
-    }
-  },
   // 需求相关工具
   {
     name: "zentao_get_stories",
@@ -44500,28 +44371,6 @@ var tools = [
         }
       },
       required: ["id", "closedReason"]
-    }
-  },
-  {
-    name: "zentao_activate_story",
-    description: "\u6FC0\u6D3B\u9700\u6C42\uFF08\u91CD\u65B0\u6253\u5F00\u5DF2\u5173\u95ED\u7684\u9700\u6C42\uFF09",
-    inputSchema: {
-      type: "object",
-      properties: {
-        storyID: {
-          type: "number",
-          description: "\u9700\u6C42 ID"
-        },
-        assignedTo: {
-          type: "string",
-          description: "\u6307\u6D3E\u7ED9\uFF08\u7528\u6237\u8D26\u53F7\uFF09"
-        },
-        comment: {
-          type: "string",
-          description: "\u5907\u6CE8"
-        }
-      },
-      required: ["storyID"]
     }
   },
   // 产品和项目相关工具
@@ -44653,73 +44502,6 @@ var tools = [
       required: ["product", "title", "type", "steps"]
     }
   },
-  {
-    name: "zentao_update_testcase",
-    description: "\u4FEE\u6539\u6D4B\u8BD5\u7528\u4F8B",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: {
-          type: "number",
-          description: "\u7528\u4F8B ID"
-        },
-        title: {
-          type: "string",
-          description: "\u7528\u4F8B\u6807\u9898"
-        },
-        type: {
-          type: "string",
-          enum: ["feature", "performance", "config", "install", "security", "interface", "unit", "other"],
-          description: "\u7528\u4F8B\u7C7B\u578B"
-        },
-        steps: {
-          type: "array",
-          items: {
-            type: "object",
-            properties: {
-              desc: {
-                type: "string",
-                description: "\u6B65\u9AA4\u63CF\u8FF0"
-              },
-              expect: {
-                type: "string",
-                description: "\u671F\u671B\u7ED3\u679C"
-              }
-            },
-            required: ["desc", "expect"]
-          },
-          description: "\u7528\u4F8B\u6B65\u9AA4"
-        },
-        pri: {
-          type: "number",
-          enum: [1, 2, 3, 4],
-          description: "\u4F18\u5148\u7EA7"
-        },
-        stage: {
-          type: "string",
-          enum: ["unittest", "feature", "intergrate", "system", "smoke", "bvt"],
-          description: "\u9002\u7528\u9636\u6BB5"
-        },
-        precondition: {
-          type: "string",
-          description: "\u524D\u7F6E\u6761\u4EF6"
-        },
-        module: {
-          type: "number",
-          description: "\u6240\u5C5E\u6A21\u5757 ID"
-        },
-        story: {
-          type: "number",
-          description: "\u76F8\u5173\u9700\u6C42 ID"
-        },
-        keywords: {
-          type: "string",
-          description: "\u5173\u952E\u8BCD"
-        }
-      },
-      required: ["id"]
-    }
-  },
   // Bug 更新相关工具
   {
     name: "zentao_update_bug",
@@ -44758,20 +44540,6 @@ var tools = [
       required: ["id"]
     }
   },
-  {
-    name: "zentao_change_story",
-    description: "\u53D8\u66F4\u9700\u6C42\uFF08\u4FEE\u6539\u6807\u9898\u3001\u63CF\u8FF0\u3001\u9A8C\u6536\u6807\u51C6\uFF0C\u4F1A\u5BFC\u81F4\u72B6\u6001\u53D8\u4E3A changed\uFF09",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: { type: "number", description: "\u9700\u6C42 ID" },
-        title: { type: "string", description: "\u6807\u9898" },
-        spec: { type: "string", description: "\u63CF\u8FF0" },
-        verify: { type: "string", description: "\u9A8C\u6536\u6807\u51C6" }
-      },
-      required: ["id"]
-    }
-  },
   // 产品详情/创建/更新相关工具
   {
     name: "zentao_get_product",
@@ -44784,43 +44552,6 @@ var tools = [
       required: ["productID"]
     }
   },
-  {
-    name: "zentao_create_product",
-    description: "\u521B\u5EFA\u4EA7\u54C1",
-    inputSchema: {
-      type: "object",
-      properties: {
-        name: { type: "string", description: "\u4EA7\u54C1\u540D\u79F0" },
-        code: { type: "string", description: "\u4EA7\u54C1\u4EE3\u53F7" },
-        program: { type: "number", description: "\u6240\u5C5E\u9879\u76EE\u96C6 ID" },
-        PO: { type: "string", description: "\u4EA7\u54C1\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
-        QD: { type: "string", description: "\u6D4B\u8BD5\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
-        RD: { type: "string", description: "\u53D1\u5E03\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
-        type: { type: "string", enum: ["normal", "branch", "platform"], description: "\u4EA7\u54C1\u7C7B\u578B" },
-        desc: { type: "string", description: "\u4EA7\u54C1\u63CF\u8FF0" },
-        acl: { type: "string", enum: ["open", "private"], description: "\u8BBF\u95EE\u63A7\u5236" }
-      },
-      required: ["name", "code"]
-    }
-  },
-  {
-    name: "zentao_update_product",
-    description: "\u66F4\u65B0\u4EA7\u54C1\u4FE1\u606F",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: { type: "number", description: "\u4EA7\u54C1 ID" },
-        name: { type: "string", description: "\u4EA7\u54C1\u540D\u79F0" },
-        code: { type: "string", description: "\u4EA7\u54C1\u4EE3\u53F7" },
-        desc: { type: "string", description: "\u4EA7\u54C1\u63CF\u8FF0" },
-        PO: { type: "string", description: "\u4EA7\u54C1\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
-        QD: { type: "string", description: "\u6D4B\u8BD5\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
-        RD: { type: "string", description: "\u53D1\u5E03\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
-        status: { type: "string", description: "\u4EA7\u54C1\u72B6\u6001" }
-      },
-      required: ["id"]
-    }
-  },
   // 项目详情/创建/更新相关工具
   {
     name: "zentao_get_project",
@@ -44831,39 +44562,6 @@ var tools = [
         projectID: { type: "number", description: "\u9879\u76EE ID" }
       },
       required: ["projectID"]
-    }
-  },
-  {
-    name: "zentao_create_project",
-    description: "\u521B\u5EFA\u9879\u76EE",
-    inputSchema: {
-      type: "object",
-      properties: {
-        name: { type: "string", description: "\u9879\u76EE\u540D\u79F0" },
-        code: { type: "string", description: "\u9879\u76EE\u4EE3\u53F7" },
-        begin: { type: "string", description: "\u5F00\u59CB\u65E5\u671F YYYY-MM-DD" },
-        end: { type: "string", description: "\u7ED3\u675F\u65E5\u671F YYYY-MM-DD" },
-        products: { type: "array", items: { type: "number" }, description: "\u5173\u8054\u4EA7\u54C1 ID \u5217\u8868" },
-        model: { type: "string", enum: ["scrum", "waterfall"], description: "\u9879\u76EE\u6A21\u578B" },
-        parent: { type: "number", description: "\u6240\u5C5E\u9879\u76EE\u96C6 ID" }
-      },
-      required: ["name", "code", "begin", "end", "products"]
-    }
-  },
-  {
-    name: "zentao_update_project",
-    description: "\u66F4\u65B0\u9879\u76EE\u4FE1\u606F",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: { type: "number", description: "\u9879\u76EE ID" },
-        name: { type: "string", description: "\u9879\u76EE\u540D\u79F0" },
-        code: { type: "string", description: "\u9879\u76EE\u4EE3\u53F7" },
-        PM: { type: "string", description: "\u9879\u76EE\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
-        desc: { type: "string", description: "\u9879\u76EE\u63CF\u8FF0" },
-        days: { type: "number", description: "\u53EF\u7528\u5DE5\u4F5C\u65E5" }
-      },
-      required: ["id"]
     }
   },
   // 用户相关工具
@@ -44897,75 +44595,6 @@ var tools = [
       properties: {},
       required: []
     }
-  },
-  {
-    name: "zentao_create_user",
-    description: "\u521B\u5EFA\u7528\u6237",
-    inputSchema: {
-      type: "object",
-      properties: {
-        account: { type: "string", description: "\u7528\u6237\u8D26\u53F7" },
-        password: { type: "string", description: "\u5BC6\u7801" },
-        realname: { type: "string", description: "\u771F\u5B9E\u59D3\u540D" },
-        gender: { type: "string", enum: ["m", "f"], description: "\u6027\u522B" },
-        role: { type: "string", description: "\u89D2\u8272" },
-        dept: { type: "number", description: "\u90E8\u95E8 ID" },
-        email: { type: "string", description: "\u90AE\u7BB1" },
-        mobile: { type: "string", description: "\u624B\u673A\u53F7" }
-      },
-      required: ["account", "password"]
-    }
-  },
-  {
-    name: "zentao_update_user",
-    description: "\u66F4\u65B0\u7528\u6237\u4FE1\u606F",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: { type: "number", description: "\u7528\u6237 ID" },
-        realname: { type: "string", description: "\u771F\u5B9E\u59D3\u540D" },
-        role: { type: "string", description: "\u89D2\u8272" },
-        dept: { type: "number", description: "\u90E8\u95E8 ID" },
-        email: { type: "string", description: "\u90AE\u7BB1" },
-        mobile: { type: "string", description: "\u624B\u673A\u53F7" }
-      },
-      required: ["id"]
-    }
-  },
-  // 测试单相关工具
-  {
-    name: "zentao_get_testtasks",
-    description: "\u83B7\u53D6\u6D4B\u8BD5\u5355\u5217\u8868",
-    inputSchema: {
-      type: "object",
-      properties: {
-        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08\u53EF\u9009\uFF09" },
-        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
-      },
-      required: []
-    }
-  },
-  {
-    name: "zentao_get_project_testtasks",
-    description: "\u83B7\u53D6\u9879\u76EE\u6D4B\u8BD5\u5355\u5217\u8868",
-    inputSchema: {
-      type: "object",
-      properties: {
-        projectID: { type: "number", description: "\u9879\u76EE ID" }
-      },
-      required: ["projectID"]
-    }
-  },
-  {
-    name: "zentao_get_testtask",
-    description: "\u83B7\u53D6\u6D4B\u8BD5\u5355\u8BE6\u60C5",
-    inputSchema: {
-      type: "object",
-      properties: {
-        testtaskID: { type: "number", description: "\u6D4B\u8BD5\u5355 ID" }
-      },
-      required: ["testtaskID"]
-    }
   }
 ];
 var server = new Server({
@@ -44988,11 +44617,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "zentao_get_bugs": {
         const { productID, browseType, limit } = args;
         result = await zentaoClient.getBugs(productID, browseType, limit);
-        break;
-      }
-      case "zentao_get_assigned_bugs": {
-        const { account, limit } = args;
-        result = await zentaoClient.getAssignedBugs(account, limit);
         break;
       }
       case "zentao_get_bug": {
@@ -45048,24 +44672,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         };
         break;
       }
-      case "zentao_activate_bug": {
-        const { id, assignedTo, comment } = args;
-        const success2 = await zentaoClient.activateBug({ id, assignedTo, comment });
-        result = {
-          success: success2,
-          message: success2 ? `Bug #${id} \u5DF2\u6FC0\u6D3B` : `Bug #${id} \u6FC0\u6D3B\u5931\u8D25`
-        };
-        break;
-      }
-      case "zentao_confirm_bug": {
-        const { bugID, assignedTo } = args;
-        const success2 = await zentaoClient.confirmBug(bugID, assignedTo);
-        result = {
-          success: success2,
-          message: success2 ? `Bug #${bugID} \u5DF2\u786E\u8BA4` : `Bug #${bugID} \u786E\u8BA4\u5931\u8D25`
-        };
-        break;
-      }
       // 需求相关
       case "zentao_get_stories": {
         const { productID, browseType, limit } = args;
@@ -45108,15 +44714,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         result = {
           success: success2,
           message: success2 ? `\u9700\u6C42 #${id} \u5DF2\u5173\u95ED` : `\u9700\u6C42 #${id} \u5173\u95ED\u5931\u8D25`
-        };
-        break;
-      }
-      case "zentao_activate_story": {
-        const { storyID, assignedTo, comment } = args;
-        const success2 = await zentaoClient.activateStory(storyID, assignedTo, comment);
-        result = {
-          success: success2,
-          message: success2 ? `\u9700\u6C42 #${storyID} \u5DF2\u6FC0\u6D3B` : `\u9700\u6C42 #${storyID} \u6FC0\u6D3B\u5931\u8D25`
         };
         break;
       }
@@ -45164,22 +44761,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
         break;
       }
-      case "zentao_update_testcase": {
-        const { id, title, type, steps, pri, stage, precondition, module: module2, story, keywords } = args;
-        result = await zentaoClient.updateTestCase({
-          id,
-          title,
-          type,
-          steps,
-          pri,
-          stage,
-          precondition,
-          module: module2,
-          story,
-          keywords
-        });
-        break;
-      }
       // Bug 更新相关
       case "zentao_update_bug": {
         const { id, title, severity, pri, type, steps, module: module2, deadline } = args;
@@ -45204,17 +44785,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
         break;
       }
-      case "zentao_change_story": {
-        const { id, title, spec, verify } = args;
-        result = await zentaoClient.changeStory({ id, title, spec, verify });
-        if (!result) {
-          return {
-            content: [{ type: "text", text: `\u9700\u6C42 #${id} \u53D8\u66F4\u5931\u8D25` }],
-            isError: true
-          };
-        }
-        break;
-      }
       // 产品详情/创建/更新相关
       case "zentao_get_product": {
         const { productID } = args;
@@ -45227,22 +44797,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         }
         break;
       }
-      case "zentao_create_product": {
-        const { name: name2, code, program, PO, QD, RD, type, desc, acl } = args;
-        result = await zentaoClient.createProduct({ name: name2, code, program, PO, QD, RD, type, desc, acl });
-        break;
-      }
-      case "zentao_update_product": {
-        const { id, name: name2, code, desc, PO, QD, RD, status } = args;
-        result = await zentaoClient.updateProduct({ id, name: name2, code, desc, PO, QD, RD, status });
-        if (!result) {
-          return {
-            content: [{ type: "text", text: `\u4EA7\u54C1 #${id} \u66F4\u65B0\u5931\u8D25` }],
-            isError: true
-          };
-        }
-        break;
-      }
       // 项目详情/创建/更新相关
       case "zentao_get_project": {
         const { projectID } = args;
@@ -45250,22 +44804,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!result) {
           return {
             content: [{ type: "text", text: `\u9879\u76EE #${projectID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
-            isError: true
-          };
-        }
-        break;
-      }
-      case "zentao_create_project": {
-        const { name: name2, code, begin, end, products, model, parent } = args;
-        result = await zentaoClient.createProject({ name: name2, code, begin, end, products, model, parent });
-        break;
-      }
-      case "zentao_update_project": {
-        const { id, name: name2, code, PM, desc, days } = args;
-        result = await zentaoClient.updateProject({ id, name: name2, code, PM, desc, days });
-        if (!result) {
-          return {
-            content: [{ type: "text", text: `\u9879\u76EE #${id} \u66F4\u65B0\u5931\u8D25` }],
             isError: true
           };
         }
@@ -45293,44 +44831,6 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         if (!result) {
           return {
             content: [{ type: "text", text: "\u83B7\u53D6\u5F53\u524D\u7528\u6237\u4FE1\u606F\u5931\u8D25" }],
-            isError: true
-          };
-        }
-        break;
-      }
-      case "zentao_create_user": {
-        const { account, password, realname, gender, role, dept, email: email3, mobile } = args;
-        result = await zentaoClient.createUser({ account, password, realname, gender, role, dept, email: email3, mobile });
-        break;
-      }
-      case "zentao_update_user": {
-        const { id, realname, role, dept, email: email3, mobile } = args;
-        result = await zentaoClient.updateUser({ id, realname, role, dept, email: email3, mobile });
-        if (!result) {
-          return {
-            content: [{ type: "text", text: `\u7528\u6237 #${id} \u66F4\u65B0\u5931\u8D25` }],
-            isError: true
-          };
-        }
-        break;
-      }
-      // 测试单相关
-      case "zentao_get_testtasks": {
-        const { productID, limit } = args || {};
-        result = await zentaoClient.getTestTasks(productID, limit);
-        break;
-      }
-      case "zentao_get_project_testtasks": {
-        const { projectID } = args;
-        result = await zentaoClient.getProjectTestTasks(projectID);
-        break;
-      }
-      case "zentao_get_testtask": {
-        const { testtaskID } = args;
-        result = await zentaoClient.getTestTask(testtaskID);
-        if (!result) {
-          return {
-            content: [{ type: "text", text: `\u6D4B\u8BD5\u5355 #${testtaskID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
             isError: true
           };
         }

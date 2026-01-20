@@ -2,7 +2,7 @@
  * 禅道 API 客户端
  * 封装禅道 REST API 的调用，支持 Bug 和需求的增删改查
  */
-import { ZentaoConfig, Bug, Story, Product, Project, CreateBugParams, ResolveBugParams, CloseBugParams, ActivateBugParams, UpdateBugParams, CreateStoryParams, CloseStoryParams, UpdateStoryParams, ChangeStoryParams, TestCase, TestCaseListResponse, CreateTestCaseParams, UpdateTestCaseParams, Task, CreateTaskParams, UpdateTaskParams, User, CreateUserParams, UpdateUserParams, Program, CreateProgramParams, UpdateProgramParams, Plan, CreatePlanParams, UpdatePlanParams, Release, Build, CreateBuildParams, UpdateBuildParams, Execution, CreateExecutionParams, UpdateExecutionParams, TestTask, CreateProductParams, UpdateProductParams, CreateProjectParams, UpdateProjectParams } from './types.js';
+import { ZentaoConfig, Bug, Story, Product, Project, CreateBugParams, ResolveBugParams, CloseBugParams, ActivateBugParams, UpdateBugParams, CreateStoryParams, CloseStoryParams, UpdateStoryParams, ChangeStoryParams, TestCase, TestCaseListResponse, CreateTestCaseParams, Task, CreateTaskParams, UpdateTaskParams, User, CreateUserParams, UpdateUserParams, Program, CreateProgramParams, UpdateProgramParams, Plan, CreatePlanParams, UpdatePlanParams, Release, Build, CreateBuildParams, UpdateBuildParams, Execution, CreateExecutionParams, UpdateExecutionParams, CreateProductParams, UpdateProductParams, CreateProjectParams, UpdateProjectParams } from './types.js';
 /**
  * 禅道 API 客户端类
  * 提供与禅道系统交互的所有方法
@@ -155,12 +155,6 @@ export declare class ZentaoClient {
      * @returns 新创建的测试用例
      */
     createTestCase(params: CreateTestCaseParams): Promise<TestCase>;
-    /**
-     * 修改测试用例
-     * @param params - 修改测试用例参数
-     * @returns 修改后的测试用例
-     */
-    updateTestCase(params: UpdateTestCaseParams): Promise<TestCase>;
     /**
      * 更新 Bug
      * @param params - 更新 Bug 参数
@@ -406,24 +400,5 @@ export declare class ZentaoClient {
      * @returns 更新后的执行
      */
     updateExecution(params: UpdateExecutionParams): Promise<Execution | null>;
-    /**
-     * 获取测试单列表
-     * @param productID - 产品 ID (可选)
-     * @param limit - 返回数量限制
-     * @returns 测试单列表
-     */
-    getTestTasks(productID?: number, limit?: number): Promise<TestTask[]>;
-    /**
-     * 获取项目测试单列表
-     * @param projectID - 项目 ID
-     * @returns 测试单列表
-     */
-    getProjectTestTasks(projectID: number): Promise<TestTask[]>;
-    /**
-     * 获取测试单详情
-     * @param testtaskID - 测试单 ID
-     * @returns 测试单详情
-     */
-    getTestTask(testtaskID: number): Promise<TestTask | null>;
 }
 //# sourceMappingURL=zentao-client.d.ts.map
