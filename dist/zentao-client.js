@@ -152,16 +152,40 @@ export class ZentaoClient {
      */
     async createBug(params) {
         await this.ensureLogin();
-        const response = await this.http.post(`/api.php/v1/products/${params.product}/bugs`, {
+        const data = {
             title: params.title,
-            severity: params.severity || 3,
-            pri: params.pri || 3,
-            steps: params.steps || '',
-            type: params.type || 'codeerror',
-            module: params.module || 0,
-            assignedTo: params.assignedTo || '',
-            project: params.project || 0,
-        });
+            severity: params.severity,
+            pri: params.pri,
+            type: params.type,
+        };
+        // 可选参数，仅在有值时添加
+        if (params.branch !== undefined)
+            data.branch = params.branch;
+        if (params.module !== undefined)
+            data.module = params.module;
+        if (params.execution !== undefined)
+            data.execution = params.execution;
+        if (params.keywords !== undefined)
+            data.keywords = params.keywords;
+        if (params.os !== undefined)
+            data.os = params.os;
+        if (params.browser !== undefined)
+            data.browser = params.browser;
+        if (params.steps !== undefined)
+            data.steps = params.steps;
+        if (params.task !== undefined)
+            data.task = params.task;
+        if (params.story !== undefined)
+            data.story = params.story;
+        if (params.deadline !== undefined)
+            data.deadline = params.deadline;
+        if (params.openedBuild !== undefined)
+            data.openedBuild = params.openedBuild;
+        if (params.assignedTo !== undefined)
+            data.assignedTo = params.assignedTo;
+        if (params.project !== undefined)
+            data.project = params.project;
+        const response = await this.http.post(`/api.php/v1/products/${params.product}/bugs`, data);
         return response.data.data || response.data;
     }
     /**
@@ -288,17 +312,29 @@ export class ZentaoClient {
      */
     async createStory(params) {
         await this.ensureLogin();
-        const response = await this.http.post(`/api.php/v1/products/${params.product}/stories`, {
+        const data = {
+            product: params.product,
             title: params.title,
-            spec: params.spec || '',
-            verify: params.verify || '',
-            pri: params.pri || 3,
-            estimate: params.estimate || 0,
-            module: params.module || 0,
-            plan: params.plan || 0,
-            source: params.source || '',
-            sourceNote: params.sourceNote || '',
-        });
+            category: params.category,
+            pri: params.pri,
+        };
+        if (params.spec !== undefined)
+            data.spec = params.spec;
+        if (params.verify !== undefined)
+            data.verify = params.verify;
+        if (params.estimate !== undefined)
+            data.estimate = params.estimate;
+        if (params.module !== undefined)
+            data.module = params.module;
+        if (params.plan !== undefined)
+            data.plan = params.plan;
+        if (params.source !== undefined)
+            data.source = params.source;
+        if (params.sourceNote !== undefined)
+            data.sourceNote = params.sourceNote;
+        if (params.keywords !== undefined)
+            data.keywords = params.keywords;
+        const response = await this.http.post('/api.php/v1/stories', data);
         return response.data.data || response.data;
     }
     /**
@@ -452,20 +488,955 @@ export class ZentaoClient {
         const response = await this.http.put(`/api.php/v1/testcases/${params.id}`, updateData);
         return response.data;
     }
+    // ==================== Bug 更新相关方法 ====================
     /**
-     * 删除测试用例
-     * @param caseID - 用例 ID
-     * @returns 是否删除成功
+     * 更新 Bug
+     * @param params - 更新 Bug 参数
+     * @returns 更新后的 Bug
      */
-    async deleteTestCase(caseID) {
+    async updateBug(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.title !== undefined)
+            updateData.title = params.title;
+        if (params.severity !== undefined)
+            updateData.severity = params.severity;
+        if (params.pri !== undefined)
+            updateData.pri = params.pri;
+        if (params.type !== undefined)
+            updateData.type = params.type;
+        if (params.module !== undefined)
+            updateData.module = params.module;
+        if (params.execution !== undefined)
+            updateData.execution = params.execution;
+        if (params.keywords !== undefined)
+            updateData.keywords = params.keywords;
+        if (params.os !== undefined)
+            updateData.os = params.os;
+        if (params.browser !== undefined)
+            updateData.browser = params.browser;
+        if (params.steps !== undefined)
+            updateData.steps = params.steps;
+        if (params.task !== undefined)
+            updateData.task = params.task;
+        if (params.story !== undefined)
+            updateData.story = params.story;
+        if (params.deadline !== undefined)
+            updateData.deadline = params.deadline;
+        if (params.openedBuild !== undefined)
+            updateData.openedBuild = params.openedBuild;
+        try {
+            const response = await this.http.put(`/api.php/v1/bugs/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    // ==================== 需求更新/变更相关方法 ====================
+    /**
+     * 更新需求
+     * @param params - 更新需求参数
+     * @returns 更新后的需求
+     */
+    async updateStory(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.module !== undefined)
+            updateData.module = params.module;
+        if (params.source !== undefined)
+            updateData.source = params.source;
+        if (params.sourceNote !== undefined)
+            updateData.sourceNote = params.sourceNote;
+        if (params.pri !== undefined)
+            updateData.pri = params.pri;
+        if (params.category !== undefined)
+            updateData.category = params.category;
+        if (params.estimate !== undefined)
+            updateData.estimate = params.estimate;
+        if (params.keywords !== undefined)
+            updateData.keywords = params.keywords;
+        try {
+            const response = await this.http.put(`/api.php/v1/stories/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 变更需求（修改标题、描述、验收标准，会导致状态变为 changed）
+     * @param params - 变更需求参数
+     * @returns 变更后的需求
+     */
+    async changeStory(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.title !== undefined)
+            updateData.title = params.title;
+        if (params.spec !== undefined)
+            updateData.spec = params.spec;
+        if (params.verify !== undefined)
+            updateData.verify = params.verify;
+        try {
+            const response = await this.http.post(`/api.php/v1/stories/${params.id}/change`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    // ==================== 产品详情/创建/更新相关方法 ====================
+    /**
+     * 获取产品详情
+     * @param productID - 产品 ID
+     * @returns 产品详情
+     */
+    async getProduct(productID) {
         await this.ensureLogin();
         try {
-            await this.http.delete(`/api.php/v1/testcases/${caseID}`);
+            const response = await this.http.get(`/api.php/v1/products/${productID}`);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 创建产品
+     * @param params - 创建产品参数
+     * @returns 新创建的产品
+     */
+    async createProduct(params) {
+        await this.ensureLogin();
+        const data = {
+            name: params.name,
+            code: params.code,
+        };
+        if (params.program !== undefined)
+            data.program = params.program;
+        if (params.line !== undefined)
+            data.line = params.line;
+        if (params.PO !== undefined)
+            data.PO = params.PO;
+        if (params.QD !== undefined)
+            data.QD = params.QD;
+        if (params.RD !== undefined)
+            data.RD = params.RD;
+        if (params.type !== undefined)
+            data.type = params.type;
+        if (params.desc !== undefined)
+            data.desc = params.desc;
+        if (params.acl !== undefined)
+            data.acl = params.acl;
+        if (params.whitelist !== undefined)
+            data.whitelist = params.whitelist;
+        const response = await this.http.post('/api.php/v1/products', data);
+        return response.data.data || response.data;
+    }
+    /**
+     * 更新产品
+     * @param params - 更新产品参数
+     * @returns 更新后的产品
+     */
+    async updateProduct(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.name !== undefined)
+            updateData.name = params.name;
+        if (params.code !== undefined)
+            updateData.code = params.code;
+        if (params.program !== undefined)
+            updateData.program = params.program;
+        if (params.line !== undefined)
+            updateData.line = params.line;
+        if (params.type !== undefined)
+            updateData.type = params.type;
+        if (params.status !== undefined)
+            updateData.status = params.status;
+        if (params.desc !== undefined)
+            updateData.desc = params.desc;
+        if (params.PO !== undefined)
+            updateData.PO = params.PO;
+        if (params.QD !== undefined)
+            updateData.QD = params.QD;
+        if (params.RD !== undefined)
+            updateData.RD = params.RD;
+        if (params.acl !== undefined)
+            updateData.acl = params.acl;
+        if (params.whitelist !== undefined)
+            updateData.whitelist = params.whitelist;
+        try {
+            const response = await this.http.put(`/api.php/v1/products/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    // ==================== 项目详情/创建/更新相关方法 ====================
+    /**
+     * 获取项目详情
+     * @param projectID - 项目 ID
+     * @returns 项目详情
+     */
+    async getProject(projectID) {
+        await this.ensureLogin();
+        try {
+            const response = await this.http.get(`/api.php/v1/projects/${projectID}`);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 创建项目
+     * @param params - 创建项目参数
+     * @returns 新创建的项目
+     */
+    async createProject(params) {
+        await this.ensureLogin();
+        const response = await this.http.post('/api.php/v1/projects', {
+            name: params.name,
+            code: params.code,
+            begin: params.begin,
+            end: params.end,
+            products: params.products,
+            model: params.model || 'scrum',
+            parent: params.parent || 0,
+        });
+        return response.data.data || response.data;
+    }
+    /**
+     * 更新项目
+     * @param params - 更新项目参数
+     * @returns 更新后的项目
+     */
+    async updateProject(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.name !== undefined)
+            updateData.name = params.name;
+        if (params.code !== undefined)
+            updateData.code = params.code;
+        if (params.parent !== undefined)
+            updateData.parent = params.parent;
+        if (params.PM !== undefined)
+            updateData.PM = params.PM;
+        if (params.budget !== undefined)
+            updateData.budget = params.budget;
+        if (params.budgetUnit !== undefined)
+            updateData.budgetUnit = params.budgetUnit;
+        if (params.days !== undefined)
+            updateData.days = params.days;
+        if (params.desc !== undefined)
+            updateData.desc = params.desc;
+        if (params.acl !== undefined)
+            updateData.acl = params.acl;
+        if (params.whitelist !== undefined)
+            updateData.whitelist = params.whitelist;
+        if (params.auth !== undefined)
+            updateData.auth = params.auth;
+        try {
+            const response = await this.http.put(`/api.php/v1/projects/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    // ==================== 任务相关方法 ====================
+    /**
+     * 获取执行的任务列表
+     * @param executionID - 执行 ID
+     * @param limit - 返回数量限制
+     * @returns 任务列表
+     */
+    async getTasks(executionID, limit = 100) {
+        await this.ensureLogin();
+        const response = await this.http.get(`/api.php/v1/executions/${executionID}/tasks?limit=${limit}`);
+        return response.data.data || response.data.tasks || [];
+    }
+    /**
+     * 获取任务详情
+     * @param taskID - 任务 ID
+     * @returns 任务详情
+     */
+    async getTask(taskID) {
+        await this.ensureLogin();
+        try {
+            const response = await this.http.get(`/api.php/v1/tasks/${taskID}`);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 创建任务
+     * @param params - 创建任务参数
+     * @returns 新创建的任务
+     */
+    async createTask(params) {
+        await this.ensureLogin();
+        const data = {
+            name: params.name,
+            type: params.type,
+            assignedTo: params.assignedTo,
+            estStarted: params.estStarted,
+            deadline: params.deadline,
+        };
+        if (params.module !== undefined)
+            data.module = params.module;
+        if (params.story !== undefined)
+            data.story = params.story;
+        if (params.fromBug !== undefined)
+            data.fromBug = params.fromBug;
+        if (params.pri !== undefined)
+            data.pri = params.pri;
+        if (params.estimate !== undefined)
+            data.estimate = params.estimate;
+        if (params.desc !== undefined)
+            data.desc = params.desc;
+        const response = await this.http.post(`/api.php/v1/executions/${params.execution}/tasks`, data);
+        return response.data.data || response.data;
+    }
+    /**
+     * 更新任务
+     * @param params - 更新任务参数
+     * @returns 更新后的任务
+     */
+    async updateTask(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.name !== undefined)
+            updateData.name = params.name;
+        if (params.type !== undefined)
+            updateData.type = params.type;
+        if (params.assignedTo !== undefined)
+            updateData.assignedTo = params.assignedTo;
+        if (params.module !== undefined)
+            updateData.module = params.module;
+        if (params.story !== undefined)
+            updateData.story = params.story;
+        if (params.fromBug !== undefined)
+            updateData.fromBug = params.fromBug;
+        if (params.pri !== undefined)
+            updateData.pri = params.pri;
+        if (params.estimate !== undefined)
+            updateData.estimate = params.estimate;
+        if (params.estStarted !== undefined)
+            updateData.estStarted = params.estStarted;
+        if (params.deadline !== undefined)
+            updateData.deadline = params.deadline;
+        if (params.desc !== undefined)
+            updateData.desc = params.desc;
+        try {
+            const response = await this.http.put(`/api.php/v1/tasks/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    // ==================== 用户相关方法 ====================
+    /**
+     * 获取用户列表
+     * @param limit - 返回数量限制
+     * @returns 用户列表
+     */
+    async getUsers(limit = 100) {
+        await this.ensureLogin();
+        const response = await this.http.get(`/api.php/v1/users?limit=${limit}`);
+        return response.data.data || response.data.users || [];
+    }
+    /**
+     * 获取用户详情
+     * @param userID - 用户 ID
+     * @returns 用户详情
+     */
+    async getUser(userID) {
+        await this.ensureLogin();
+        try {
+            const response = await this.http.get(`/api.php/v1/users/${userID}`);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 获取当前登录用户信息
+     * @returns 当前用户信息
+     */
+    async getMyProfile() {
+        await this.ensureLogin();
+        try {
+            const response = await this.http.get('/api.php/v1/user');
+            return response.data.data?.profile || response.data.profile || null;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 创建用户
+     * @param params - 创建用户参数
+     * @returns 新创建的用户
+     */
+    async createUser(params) {
+        await this.ensureLogin();
+        const data = {
+            account: params.account,
+            password: params.password,
+            gender: params.gender || 'm',
+        };
+        if (params.realname !== undefined)
+            data.realname = params.realname;
+        if (params.visions !== undefined)
+            data.visions = params.visions;
+        if (params.role !== undefined)
+            data.role = params.role;
+        if (params.dept !== undefined)
+            data.dept = params.dept;
+        if (params.email !== undefined)
+            data.email = params.email;
+        if (params.mobile !== undefined)
+            data.mobile = params.mobile;
+        if (params.phone !== undefined)
+            data.phone = params.phone;
+        if (params.weixin !== undefined)
+            data.weixin = params.weixin;
+        if (params.qq !== undefined)
+            data.qq = params.qq;
+        if (params.address !== undefined)
+            data.address = params.address;
+        if (params.join !== undefined)
+            data.join = params.join;
+        const response = await this.http.post('/api.php/v1/users', data);
+        return response.data.data || response.data;
+    }
+    /**
+     * 更新用户
+     * @param params - 更新用户参数
+     * @returns 更新后的用户
+     */
+    async updateUser(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.realname !== undefined)
+            updateData.realname = params.realname;
+        if (params.role !== undefined)
+            updateData.role = params.role;
+        if (params.dept !== undefined)
+            updateData.dept = params.dept;
+        if (params.email !== undefined)
+            updateData.email = params.email;
+        if (params.gender !== undefined)
+            updateData.gender = params.gender;
+        if (params.mobile !== undefined)
+            updateData.mobile = params.mobile;
+        if (params.phone !== undefined)
+            updateData.phone = params.phone;
+        if (params.weixin !== undefined)
+            updateData.weixin = params.weixin;
+        if (params.qq !== undefined)
+            updateData.qq = params.qq;
+        if (params.address !== undefined)
+            updateData.address = params.address;
+        if (params.join !== undefined)
+            updateData.join = params.join;
+        if (params.password !== undefined)
+            updateData.password = params.password;
+        try {
+            const response = await this.http.put(`/api.php/v1/users/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    // ==================== 项目集相关方法 ====================
+    /**
+     * 获取项目集列表
+     * @param limit - 返回数量限制
+     * @returns 项目集列表
+     */
+    async getPrograms(limit = 100) {
+        await this.ensureLogin();
+        const response = await this.http.get(`/api.php/v1/programs?limit=${limit}`);
+        return response.data.data || response.data.programs || [];
+    }
+    /**
+     * 获取项目集详情
+     * @param programID - 项目集 ID
+     * @returns 项目集详情
+     */
+    async getProgram(programID) {
+        await this.ensureLogin();
+        try {
+            const response = await this.http.get(`/api.php/v1/programs/${programID}`);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 创建项目集
+     * @param params - 创建项目集参数
+     * @returns 新创建的项目集
+     */
+    async createProgram(params) {
+        await this.ensureLogin();
+        const data = {
+            name: params.name,
+            begin: params.begin,
+            end: params.end,
+            parent: params.parent || 0,
+        };
+        if (params.PM !== undefined)
+            data.PM = params.PM;
+        if (params.budget !== undefined)
+            data.budget = params.budget;
+        if (params.budgetUnit !== undefined)
+            data.budgetUnit = params.budgetUnit;
+        if (params.desc !== undefined)
+            data.desc = params.desc;
+        if (params.acl !== undefined)
+            data.acl = params.acl;
+        if (params.whitelist !== undefined)
+            data.whitelist = params.whitelist;
+        const response = await this.http.post('/api.php/v1/programs', data);
+        return response.data.data || response.data;
+    }
+    /**
+     * 更新项目集
+     * @param params - 更新项目集参数
+     * @returns 更新后的项目集
+     */
+    async updateProgram(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.name !== undefined)
+            updateData.name = params.name;
+        if (params.parent !== undefined)
+            updateData.parent = params.parent;
+        if (params.PM !== undefined)
+            updateData.PM = params.PM;
+        if (params.budget !== undefined)
+            updateData.budget = params.budget;
+        if (params.budgetUnit !== undefined)
+            updateData.budgetUnit = params.budgetUnit;
+        if (params.desc !== undefined)
+            updateData.desc = params.desc;
+        if (params.begin !== undefined)
+            updateData.begin = params.begin;
+        if (params.end !== undefined)
+            updateData.end = params.end;
+        if (params.acl !== undefined)
+            updateData.acl = params.acl;
+        if (params.whitelist !== undefined)
+            updateData.whitelist = params.whitelist;
+        try {
+            const response = await this.http.put(`/api.php/v1/programs/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    // ==================== 计划相关方法 ====================
+    /**
+     * 获取产品计划列表
+     * @param productID - 产品 ID
+     * @param limit - 返回数量限制
+     * @returns 计划列表
+     */
+    async getPlans(productID, limit = 100) {
+        await this.ensureLogin();
+        const response = await this.http.get(`/api.php/v1/products/${productID}/plans?limit=${limit}`);
+        return response.data.data || response.data.plans || [];
+    }
+    /**
+     * 获取计划详情
+     * @param planID - 计划 ID
+     * @returns 计划详情
+     */
+    async getPlan(planID) {
+        await this.ensureLogin();
+        try {
+            const response = await this.http.get(`/api.php/v1/productplans/${planID}`);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 创建计划
+     * @param params - 创建计划参数
+     * @returns 新创建的计划
+     */
+    async createPlan(params) {
+        await this.ensureLogin();
+        const data = {
+            title: params.title,
+        };
+        if (params.begin !== undefined)
+            data.begin = params.begin;
+        if (params.end !== undefined)
+            data.end = params.end;
+        if (params.branch !== undefined)
+            data.branch = params.branch;
+        if (params.parent !== undefined)
+            data.parent = params.parent;
+        if (params.desc !== undefined)
+            data.desc = params.desc;
+        const response = await this.http.post(`/api.php/v1/products/${params.product}/plans`, data);
+        return response.data.data || response.data;
+    }
+    /**
+     * 更新计划
+     * @param params - 更新计划参数
+     * @returns 更新后的计划
+     */
+    async updatePlan(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.title !== undefined)
+            updateData.title = params.title;
+        if (params.begin !== undefined)
+            updateData.begin = params.begin;
+        if (params.end !== undefined)
+            updateData.end = params.end;
+        if (params.branch !== undefined)
+            updateData.branch = params.branch;
+        if (params.desc !== undefined)
+            updateData.desc = params.desc;
+        try {
+            const response = await this.http.put(`/api.php/v1/productplans/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 计划关联需求
+     * @param planID - 计划 ID
+     * @param stories - 需求 ID 列表
+     * @returns 是否成功
+     */
+    async linkStoriesToPlan(planID, stories) {
+        await this.ensureLogin();
+        try {
+            await this.http.post(`/api.php/v1/productplans/${planID}/linkstories`, { stories });
             return true;
         }
         catch (error) {
-            console.error('删除测试用例失败:', error);
+            console.error('计划关联需求失败:', error);
             return false;
+        }
+    }
+    /**
+     * 计划取消关联需求
+     * @param planID - 计划 ID
+     * @param stories - 需求 ID 列表
+     * @returns 是否成功
+     */
+    async unlinkStoriesFromPlan(planID, stories) {
+        await this.ensureLogin();
+        try {
+            await this.http.post(`/api.php/v1/productplans/${planID}/unlinkstories`, { stories });
+            return true;
+        }
+        catch (error) {
+            console.error('计划取消关联需求失败:', error);
+            return false;
+        }
+    }
+    /**
+     * 计划关联 Bug
+     * @param planID - 计划 ID
+     * @param bugs - Bug ID 列表
+     * @returns 是否成功
+     */
+    async linkBugsToPlan(planID, bugs) {
+        await this.ensureLogin();
+        try {
+            await this.http.post(`/api.php/v1/productplans/${planID}/linkbugs`, { bugs });
+            return true;
+        }
+        catch (error) {
+            console.error('计划关联 Bug 失败:', error);
+            return false;
+        }
+    }
+    /**
+     * 计划取消关联 Bug
+     * @param planID - 计划 ID
+     * @param bugs - Bug ID 列表
+     * @returns 是否成功
+     */
+    async unlinkBugsFromPlan(planID, bugs) {
+        await this.ensureLogin();
+        try {
+            await this.http.post(`/api.php/v1/productplans/${planID}/unlinkbugs`, { bugs });
+            return true;
+        }
+        catch (error) {
+            console.error('计划取消关联 Bug 失败:', error);
+            return false;
+        }
+    }
+    // ==================== 发布相关方法 ====================
+    /**
+     * 获取项目发布列表
+     * @param projectID - 项目 ID
+     * @returns 发布列表
+     */
+    async getProjectReleases(projectID) {
+        await this.ensureLogin();
+        const response = await this.http.get(`/api.php/v1/projects/${projectID}/releases`);
+        return response.data.data || response.data.releases || [];
+    }
+    /**
+     * 获取产品发布列表
+     * @param productID - 产品 ID
+     * @returns 发布列表
+     */
+    async getProductReleases(productID) {
+        await this.ensureLogin();
+        const response = await this.http.get(`/api.php/v1/products/${productID}/releases`);
+        return response.data.data || response.data.releases || [];
+    }
+    // ==================== 版本相关方法 ====================
+    /**
+     * 获取项目版本列表
+     * @param projectID - 项目 ID
+     * @returns 版本列表
+     */
+    async getProjectBuilds(projectID) {
+        await this.ensureLogin();
+        const response = await this.http.get(`/api.php/v1/projects/${projectID}/builds`);
+        return response.data.data || response.data.builds || [];
+    }
+    /**
+     * 获取执行版本列表
+     * @param executionID - 执行 ID
+     * @returns 版本列表
+     */
+    async getExecutionBuilds(executionID) {
+        await this.ensureLogin();
+        const response = await this.http.get(`/api.php/v1/executions/${executionID}/builds`);
+        return response.data.data || response.data.builds || [];
+    }
+    /**
+     * 获取版本详情
+     * @param buildID - 版本 ID
+     * @returns 版本详情
+     */
+    async getBuild(buildID) {
+        await this.ensureLogin();
+        try {
+            const response = await this.http.get(`/api.php/v1/builds/${buildID}`);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 创建版本
+     * @param params - 创建版本参数
+     * @returns 新创建的版本
+     */
+    async createBuild(params) {
+        await this.ensureLogin();
+        const data = {
+            name: params.name,
+            execution: params.execution,
+            product: params.product,
+            builder: params.builder,
+        };
+        if (params.branch !== undefined)
+            data.branch = params.branch;
+        if (params.date !== undefined)
+            data.date = params.date;
+        if (params.scmPath !== undefined)
+            data.scmPath = params.scmPath;
+        if (params.filePath !== undefined)
+            data.filePath = params.filePath;
+        if (params.desc !== undefined)
+            data.desc = params.desc;
+        const response = await this.http.post(`/api.php/v1/projects/${params.project}/builds`, data);
+        return response.data.data || response.data;
+    }
+    /**
+     * 更新版本
+     * @param params - 更新版本参数
+     * @returns 更新后的版本
+     */
+    async updateBuild(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.name !== undefined)
+            updateData.name = params.name;
+        if (params.scmPath !== undefined)
+            updateData.scmPath = params.scmPath;
+        if (params.filePath !== undefined)
+            updateData.filePath = params.filePath;
+        if (params.desc !== undefined)
+            updateData.desc = params.desc;
+        if (params.builder !== undefined)
+            updateData.builder = params.builder;
+        if (params.date !== undefined)
+            updateData.date = params.date;
+        try {
+            const response = await this.http.put(`/api.php/v1/builds/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    // ==================== 执行（迭代）相关方法 ====================
+    /**
+     * 获取执行详情
+     * @param executionID - 执行 ID
+     * @returns 执行详情
+     */
+    async getExecution(executionID) {
+        await this.ensureLogin();
+        try {
+            const response = await this.http.get(`/api.php/v1/executions/${executionID}`);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    /**
+     * 创建执行
+     * @param params - 创建执行参数
+     * @returns 新创建的执行
+     */
+    async createExecution(params) {
+        await this.ensureLogin();
+        const data = {
+            name: params.name,
+            code: params.code,
+            begin: params.begin,
+            end: params.end,
+        };
+        if (params.days !== undefined)
+            data.days = params.days;
+        if (params.lifetime !== undefined)
+            data.lifetime = params.lifetime;
+        if (params.PO !== undefined)
+            data.PO = params.PO;
+        if (params.PM !== undefined)
+            data.PM = params.PM;
+        if (params.QD !== undefined)
+            data.QD = params.QD;
+        if (params.RD !== undefined)
+            data.RD = params.RD;
+        if (params.teamMembers !== undefined)
+            data.teamMembers = params.teamMembers;
+        if (params.desc !== undefined)
+            data.desc = params.desc;
+        if (params.acl !== undefined)
+            data.acl = params.acl;
+        if (params.whitelist !== undefined)
+            data.whitelist = params.whitelist;
+        const response = await this.http.post(`/api.php/v1/projects/${params.project}/executions`, data);
+        return response.data.data || response.data;
+    }
+    /**
+     * 更新执行
+     * @param params - 更新执行参数
+     * @returns 更新后的执行
+     */
+    async updateExecution(params) {
+        await this.ensureLogin();
+        const updateData = {};
+        if (params.name !== undefined)
+            updateData.name = params.name;
+        if (params.code !== undefined)
+            updateData.code = params.code;
+        if (params.begin !== undefined)
+            updateData.begin = params.begin;
+        if (params.end !== undefined)
+            updateData.end = params.end;
+        if (params.days !== undefined)
+            updateData.days = params.days;
+        if (params.lifetime !== undefined)
+            updateData.lifetime = params.lifetime;
+        if (params.PO !== undefined)
+            updateData.PO = params.PO;
+        if (params.PM !== undefined)
+            updateData.PM = params.PM;
+        if (params.QD !== undefined)
+            updateData.QD = params.QD;
+        if (params.RD !== undefined)
+            updateData.RD = params.RD;
+        if (params.teamMembers !== undefined)
+            updateData.teamMembers = params.teamMembers;
+        if (params.desc !== undefined)
+            updateData.desc = params.desc;
+        if (params.acl !== undefined)
+            updateData.acl = params.acl;
+        if (params.whitelist !== undefined)
+            updateData.whitelist = params.whitelist;
+        try {
+            const response = await this.http.put(`/api.php/v1/executions/${params.id}`, updateData);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
+        }
+    }
+    // ==================== 测试单相关方法 ====================
+    /**
+     * 获取测试单列表
+     * @param productID - 产品 ID (可选)
+     * @param limit - 返回数量限制
+     * @returns 测试单列表
+     */
+    async getTestTasks(productID, limit = 100) {
+        await this.ensureLogin();
+        let url = `/api.php/v1/testtasks?limit=${limit}`;
+        if (productID !== undefined) {
+            url += `&product=${productID}`;
+        }
+        const response = await this.http.get(url);
+        return response.data.data || response.data.testtasks || [];
+    }
+    /**
+     * 获取项目测试单列表
+     * @param projectID - 项目 ID
+     * @returns 测试单列表
+     */
+    async getProjectTestTasks(projectID) {
+        await this.ensureLogin();
+        const response = await this.http.get(`/api.php/v1/projects/${projectID}/testtasks`);
+        return response.data.data || response.data.testtasks || [];
+    }
+    /**
+     * 获取测试单详情
+     * @param testtaskID - 测试单 ID
+     * @returns 测试单详情
+     */
+    async getTestTask(testtaskID) {
+        await this.ensureLogin();
+        try {
+            const response = await this.http.get(`/api.php/v1/testtasks/${testtaskID}`);
+            return response.data.data || response.data;
+        }
+        catch {
+            return null;
         }
     }
 }

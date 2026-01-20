@@ -15,11 +15,14 @@ import dotenv from 'dotenv';
 import { ZentaoClient } from './zentao-client.js';
 import {
   BugStatus,
+  BugType,
   StoryStatus,
   BugSeverity,
   TestCaseType,
   TestCaseStage,
   TestCaseStep,
+  TaskType,
+  StoryCategory,
 } from './types.js';
 
 // 加载环境变量
@@ -150,17 +153,55 @@ const tools: Tool[] = [
           enum: [1, 2, 3, 4],
           description: '优先级: 1-紧急, 2-高, 3-中, 4-低',
         },
-        steps: {
-          type: 'string',
-          description: '重现步骤',
-        },
         type: {
           type: 'string',
-          description: 'Bug 类型',
+          enum: ['codeerror', 'config', 'install', 'security', 'performance', 'standard', 'automation', 'designdefect', 'others'],
+          description: 'Bug 类型: codeerror-代码错误, config-配置相关, install-安装部署, security-安全相关, performance-性能问题, standard-标准规范, automation-测试脚本, designdefect-设计缺陷, others-其他',
+        },
+        branch: {
+          type: 'number',
+          description: '所属分支 ID',
         },
         module: {
           type: 'number',
           description: '模块 ID',
+        },
+        execution: {
+          type: 'number',
+          description: '所属执行 ID',
+        },
+        keywords: {
+          type: 'string',
+          description: '关键词',
+        },
+        os: {
+          type: 'string',
+          description: '操作系统',
+        },
+        browser: {
+          type: 'string',
+          description: '浏览器',
+        },
+        steps: {
+          type: 'string',
+          description: '重现步骤 (支持 HTML 格式，可内嵌图片)',
+        },
+        task: {
+          type: 'number',
+          description: '相关任务 ID',
+        },
+        story: {
+          type: 'number',
+          description: '相关需求 ID',
+        },
+        deadline: {
+          type: 'string',
+          description: '截止日期，格式 YYYY-MM-DD',
+        },
+        openedBuild: {
+          type: 'array',
+          items: { type: 'string' },
+          description: '影响版本，如 ["trunk"]',
         },
         assignedTo: {
           type: 'string',
@@ -171,7 +212,7 @@ const tools: Tool[] = [
           description: '项目 ID',
         },
       },
-      required: ['product', 'title'],
+      required: ['product', 'title', 'severity', 'pri', 'type'],
     },
   },
   {
@@ -330,6 +371,16 @@ const tools: Tool[] = [
           type: 'string',
           description: '需求标题',
         },
+        category: {
+          type: 'string',
+          enum: ['feature', 'interface', 'performance', 'safe', 'experience', 'improve', 'other'],
+          description: '需求类型: feature-功能, interface-接口, performance-性能, safe-安全, experience-体验, improve-改进, other-其他',
+        },
+        pri: {
+          type: 'number',
+          enum: [1, 2, 3, 4],
+          description: '优先级: 1-紧急, 2-高, 3-中, 4-低',
+        },
         spec: {
           type: 'string',
           description: '需求描述',
@@ -337,11 +388,6 @@ const tools: Tool[] = [
         verify: {
           type: 'string',
           description: '验收标准',
-        },
-        pri: {
-          type: 'number',
-          enum: [1, 2, 3, 4],
-          description: '优先级: 1-紧急, 2-高, 3-中, 4-低',
         },
         estimate: {
           type: 'number',
@@ -357,14 +403,18 @@ const tools: Tool[] = [
         },
         source: {
           type: 'string',
-          description: '来源',
+          description: '来源: customer-客户, user-用户, po-产品经理, market-市场',
         },
         sourceNote: {
           type: 'string',
           description: '来源备注',
         },
+        keywords: {
+          type: 'string',
+          description: '关键词',
       },
-      required: ['product', 'title'],
+      },
+      required: ['product', 'title', 'category', 'pri'],
     },
   },
   {
@@ -628,18 +678,616 @@ const tools: Tool[] = [
       required: ['id'],
     },
   },
+  // Bug 更新相关工具
   {
-    name: 'zentao_delete_testcase',
-    description: '删除测试用例',
+    name: 'zentao_update_bug',
+    description: '更新 Bug 信息',
     inputSchema: {
       type: 'object',
       properties: {
-        caseID: {
-          type: 'number',
-          description: '用例 ID',
-        },
+        id: { type: 'number', description: 'Bug ID' },
+        title: { type: 'string', description: 'Bug 标题' },
+        severity: { type: 'number', enum: [1, 2, 3, 4], description: '严重程度' },
+        pri: { type: 'number', enum: [1, 2, 3, 4], description: '优先级' },
+        type: { type: 'string', description: 'Bug 类型' },
+        steps: { type: 'string', description: '重现步骤' },
+        module: { type: 'number', description: '模块 ID' },
+        deadline: { type: 'string', description: '截止日期 YYYY-MM-DD' },
       },
-      required: ['caseID'],
+      required: ['id'],
+    },
+  },
+  // 需求更新/变更相关工具
+  {
+    name: 'zentao_update_story',
+    description: '更新需求信息（不含标题和描述）',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '需求 ID' },
+        module: { type: 'number', description: '模块 ID' },
+        source: { type: 'string', description: '来源' },
+        sourceNote: { type: 'string', description: '来源备注' },
+        pri: { type: 'number', enum: [1, 2, 3, 4], description: '优先级' },
+        category: { type: 'string', description: '需求类型' },
+        estimate: { type: 'number', description: '预计工时' },
+        keywords: { type: 'string', description: '关键词' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'zentao_change_story',
+    description: '变更需求（修改标题、描述、验收标准，会导致状态变为 changed）',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '需求 ID' },
+        title: { type: 'string', description: '标题' },
+        spec: { type: 'string', description: '描述' },
+        verify: { type: 'string', description: '验收标准' },
+      },
+      required: ['id'],
+    },
+  },
+  // 产品详情/创建/更新相关工具
+  {
+    name: 'zentao_get_product',
+    description: '获取产品详情',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        productID: { type: 'number', description: '产品 ID' },
+      },
+      required: ['productID'],
+    },
+  },
+  {
+    name: 'zentao_create_product',
+    description: '创建产品',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: '产品名称' },
+        code: { type: 'string', description: '产品代号' },
+        program: { type: 'number', description: '所属项目集 ID' },
+        PO: { type: 'string', description: '产品负责人账号' },
+        QD: { type: 'string', description: '测试负责人账号' },
+        RD: { type: 'string', description: '发布负责人账号' },
+        type: { type: 'string', enum: ['normal', 'branch', 'platform'], description: '产品类型' },
+        desc: { type: 'string', description: '产品描述' },
+        acl: { type: 'string', enum: ['open', 'private'], description: '访问控制' },
+      },
+      required: ['name', 'code'],
+    },
+  },
+  {
+    name: 'zentao_update_product',
+    description: '更新产品信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '产品 ID' },
+        name: { type: 'string', description: '产品名称' },
+        code: { type: 'string', description: '产品代号' },
+        desc: { type: 'string', description: '产品描述' },
+        PO: { type: 'string', description: '产品负责人账号' },
+        QD: { type: 'string', description: '测试负责人账号' },
+        RD: { type: 'string', description: '发布负责人账号' },
+        status: { type: 'string', description: '产品状态' },
+      },
+      required: ['id'],
+    },
+  },
+  // 项目详情/创建/更新相关工具
+  {
+    name: 'zentao_get_project',
+    description: '获取项目详情',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        projectID: { type: 'number', description: '项目 ID' },
+      },
+      required: ['projectID'],
+    },
+  },
+  {
+    name: 'zentao_create_project',
+    description: '创建项目',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: '项目名称' },
+        code: { type: 'string', description: '项目代号' },
+        begin: { type: 'string', description: '开始日期 YYYY-MM-DD' },
+        end: { type: 'string', description: '结束日期 YYYY-MM-DD' },
+        products: { type: 'array', items: { type: 'number' }, description: '关联产品 ID 列表' },
+        model: { type: 'string', enum: ['scrum', 'waterfall'], description: '项目模型' },
+        parent: { type: 'number', description: '所属项目集 ID' },
+      },
+      required: ['name', 'code', 'begin', 'end', 'products'],
+    },
+  },
+  {
+    name: 'zentao_update_project',
+    description: '更新项目信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '项目 ID' },
+        name: { type: 'string', description: '项目名称' },
+        code: { type: 'string', description: '项目代号' },
+        PM: { type: 'string', description: '项目负责人账号' },
+        desc: { type: 'string', description: '项目描述' },
+        days: { type: 'number', description: '可用工作日' },
+      },
+      required: ['id'],
+    },
+  },
+  // 任务相关工具
+  {
+    name: 'zentao_get_tasks',
+    description: '获取执行（迭代）的任务列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        executionID: { type: 'number', description: '执行 ID' },
+        limit: { type: 'number', description: '返回数量限制，默认 100' },
+      },
+      required: ['executionID'],
+    },
+  },
+  {
+    name: 'zentao_get_task',
+    description: '获取任务详情',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        taskID: { type: 'number', description: '任务 ID' },
+      },
+      required: ['taskID'],
+    },
+  },
+  {
+    name: 'zentao_create_task',
+    description: '创建任务',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        execution: { type: 'number', description: '执行 ID' },
+        name: { type: 'string', description: '任务名称' },
+        type: { type: 'string', enum: ['design', 'devel', 'request', 'test', 'study', 'discuss', 'ui', 'affair', 'misc'], description: '任务类型' },
+        assignedTo: { type: 'array', items: { type: 'string' }, description: '指派给（用户账号列表）' },
+        estStarted: { type: 'string', description: '预计开始日期 YYYY-MM-DD' },
+        deadline: { type: 'string', description: '截止日期 YYYY-MM-DD' },
+        story: { type: 'number', description: '关联需求 ID' },
+        pri: { type: 'number', description: '优先级' },
+        estimate: { type: 'number', description: '预计工时' },
+        desc: { type: 'string', description: '任务描述' },
+      },
+      required: ['execution', 'name', 'type', 'assignedTo', 'estStarted', 'deadline'],
+    },
+  },
+  {
+    name: 'zentao_update_task',
+    description: '更新任务信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '任务 ID' },
+        name: { type: 'string', description: '任务名称' },
+        type: { type: 'string', enum: ['design', 'devel', 'request', 'test', 'study', 'discuss', 'ui', 'affair', 'misc'], description: '任务类型' },
+        assignedTo: { type: 'array', items: { type: 'string' }, description: '指派给' },
+        pri: { type: 'number', description: '优先级' },
+        estimate: { type: 'number', description: '预计工时' },
+        deadline: { type: 'string', description: '截止日期' },
+        desc: { type: 'string', description: '任务描述' },
+      },
+      required: ['id'],
+    },
+  },
+  // 用户相关工具
+  {
+    name: 'zentao_get_users',
+    description: '获取用户列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: { type: 'number', description: '返回数量限制，默认 100' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'zentao_get_user',
+    description: '获取用户详情',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        userID: { type: 'number', description: '用户 ID' },
+      },
+      required: ['userID'],
+    },
+  },
+  {
+    name: 'zentao_get_my_profile',
+    description: '获取当前登录用户信息',
+    inputSchema: {
+      type: 'object',
+      properties: {},
+      required: [],
+    },
+  },
+  {
+    name: 'zentao_create_user',
+    description: '创建用户',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        account: { type: 'string', description: '用户账号' },
+        password: { type: 'string', description: '密码' },
+        realname: { type: 'string', description: '真实姓名' },
+        gender: { type: 'string', enum: ['m', 'f'], description: '性别' },
+        role: { type: 'string', description: '角色' },
+        dept: { type: 'number', description: '部门 ID' },
+        email: { type: 'string', description: '邮箱' },
+        mobile: { type: 'string', description: '手机号' },
+      },
+      required: ['account', 'password'],
+    },
+  },
+  {
+    name: 'zentao_update_user',
+    description: '更新用户信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '用户 ID' },
+        realname: { type: 'string', description: '真实姓名' },
+        role: { type: 'string', description: '角色' },
+        dept: { type: 'number', description: '部门 ID' },
+        email: { type: 'string', description: '邮箱' },
+        mobile: { type: 'string', description: '手机号' },
+      },
+      required: ['id'],
+    },
+  },
+  // 项目集相关工具
+  {
+    name: 'zentao_get_programs',
+    description: '获取项目集列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        limit: { type: 'number', description: '返回数量限制，默认 100' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'zentao_get_program',
+    description: '获取项目集详情',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        programID: { type: 'number', description: '项目集 ID' },
+      },
+      required: ['programID'],
+    },
+  },
+  {
+    name: 'zentao_create_program',
+    description: '创建项目集',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        name: { type: 'string', description: '项目集名称' },
+        begin: { type: 'string', description: '开始日期 YYYY-MM-DD' },
+        end: { type: 'string', description: '结束日期 YYYY-MM-DD' },
+        parent: { type: 'number', description: '父项目集 ID' },
+        PM: { type: 'string', description: '负责人账号' },
+        budget: { type: 'number', description: '预算' },
+        desc: { type: 'string', description: '描述' },
+      },
+      required: ['name', 'begin', 'end'],
+    },
+  },
+  {
+    name: 'zentao_update_program',
+    description: '更新项目集信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '项目集 ID' },
+        name: { type: 'string', description: '项目集名称' },
+        PM: { type: 'string', description: '负责人账号' },
+        budget: { type: 'number', description: '预算' },
+        desc: { type: 'string', description: '描述' },
+        begin: { type: 'string', description: '开始日期' },
+        end: { type: 'string', description: '结束日期' },
+      },
+      required: ['id'],
+    },
+  },
+  // 计划相关工具
+  {
+    name: 'zentao_get_plans',
+    description: '获取产品计划列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        productID: { type: 'number', description: '产品 ID' },
+        limit: { type: 'number', description: '返回数量限制，默认 100' },
+      },
+      required: ['productID'],
+    },
+  },
+  {
+    name: 'zentao_get_plan',
+    description: '获取计划详情',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        planID: { type: 'number', description: '计划 ID' },
+      },
+      required: ['planID'],
+    },
+  },
+  {
+    name: 'zentao_create_plan',
+    description: '创建计划',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        product: { type: 'number', description: '产品 ID' },
+        title: { type: 'string', description: '计划名称' },
+        begin: { type: 'string', description: '开始日期 YYYY-MM-DD' },
+        end: { type: 'string', description: '结束日期 YYYY-MM-DD' },
+        desc: { type: 'string', description: '描述' },
+      },
+      required: ['product', 'title'],
+    },
+  },
+  {
+    name: 'zentao_update_plan',
+    description: '更新计划信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '计划 ID' },
+        title: { type: 'string', description: '计划名称' },
+        begin: { type: 'string', description: '开始日期' },
+        end: { type: 'string', description: '结束日期' },
+        desc: { type: 'string', description: '描述' },
+      },
+      required: ['id'],
+    },
+  },
+  {
+    name: 'zentao_link_stories_to_plan',
+    description: '计划关联需求',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        planID: { type: 'number', description: '计划 ID' },
+        stories: { type: 'array', items: { type: 'number' }, description: '需求 ID 列表' },
+      },
+      required: ['planID', 'stories'],
+    },
+  },
+  {
+    name: 'zentao_unlink_stories_from_plan',
+    description: '计划取消关联需求',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        planID: { type: 'number', description: '计划 ID' },
+        stories: { type: 'array', items: { type: 'number' }, description: '需求 ID 列表' },
+      },
+      required: ['planID', 'stories'],
+    },
+  },
+  {
+    name: 'zentao_link_bugs_to_plan',
+    description: '计划关联 Bug',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        planID: { type: 'number', description: '计划 ID' },
+        bugs: { type: 'array', items: { type: 'number' }, description: 'Bug ID 列表' },
+      },
+      required: ['planID', 'bugs'],
+    },
+  },
+  {
+    name: 'zentao_unlink_bugs_from_plan',
+    description: '计划取消关联 Bug',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        planID: { type: 'number', description: '计划 ID' },
+        bugs: { type: 'array', items: { type: 'number' }, description: 'Bug ID 列表' },
+      },
+      required: ['planID', 'bugs'],
+    },
+  },
+
+  // 发布相关工具
+  {
+    name: 'zentao_get_project_releases',
+    description: '获取项目发布列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        projectID: { type: 'number', description: '项目 ID' },
+      },
+      required: ['projectID'],
+    },
+  },
+  {
+    name: 'zentao_get_product_releases',
+    description: '获取产品发布列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        productID: { type: 'number', description: '产品 ID' },
+      },
+      required: ['productID'],
+    },
+  },
+
+  // 版本相关工具
+  {
+    name: 'zentao_get_project_builds',
+    description: '获取项目版本列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        projectID: { type: 'number', description: '项目 ID' },
+      },
+      required: ['projectID'],
+    },
+  },
+  {
+    name: 'zentao_get_execution_builds',
+    description: '获取执行版本列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        executionID: { type: 'number', description: '执行 ID' },
+      },
+      required: ['executionID'],
+    },
+  },
+  {
+    name: 'zentao_get_build',
+    description: '获取版本详情',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        buildID: { type: 'number', description: '版本 ID' },
+      },
+      required: ['buildID'],
+    },
+  },
+  {
+    name: 'zentao_create_build',
+    description: '创建版本',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project: { type: 'number', description: '项目 ID' },
+        name: { type: 'string', description: '版本名称' },
+        execution: { type: 'number', description: '执行 ID' },
+        product: { type: 'number', description: '产品 ID' },
+        builder: { type: 'string', description: '构建者账号' },
+        date: { type: 'string', description: '打包日期 YYYY-MM-DD' },
+        scmPath: { type: 'string', description: '源代码地址' },
+        filePath: { type: 'string', description: '下载地址' },
+        desc: { type: 'string', description: '描述' },
+      },
+      required: ['project', 'name', 'execution', 'product', 'builder'],
+    },
+  },
+  {
+    name: 'zentao_update_build',
+    description: '更新版本信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '版本 ID' },
+        name: { type: 'string', description: '版本名称' },
+        scmPath: { type: 'string', description: '源代码地址' },
+        filePath: { type: 'string', description: '下载地址' },
+        desc: { type: 'string', description: '描述' },
+        builder: { type: 'string', description: '构建者' },
+        date: { type: 'string', description: '打包日期' },
+      },
+      required: ['id'],
+    },
+  },
+  // 执行（迭代）相关工具
+  {
+    name: 'zentao_get_execution',
+    description: '获取执行（迭代）详情',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        executionID: { type: 'number', description: '执行 ID' },
+      },
+      required: ['executionID'],
+    },
+  },
+  {
+    name: 'zentao_create_execution',
+    description: '创建执行（迭代）',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        project: { type: 'number', description: '项目 ID' },
+        name: { type: 'string', description: '执行名称' },
+        code: { type: 'string', description: '执行代号' },
+        begin: { type: 'string', description: '开始日期 YYYY-MM-DD' },
+        end: { type: 'string', description: '结束日期 YYYY-MM-DD' },
+        days: { type: 'number', description: '可用工作日' },
+        PM: { type: 'string', description: '迭代负责人账号' },
+        teamMembers: { type: 'array', items: { type: 'string' }, description: '团队成员账号列表' },
+        desc: { type: 'string', description: '描述' },
+      },
+      required: ['project', 'name', 'code', 'begin', 'end'],
+    },
+  },
+  {
+    name: 'zentao_update_execution',
+    description: '更新执行（迭代）信息',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        id: { type: 'number', description: '执行 ID' },
+        name: { type: 'string', description: '执行名称' },
+        code: { type: 'string', description: '执行代号' },
+        begin: { type: 'string', description: '开始日期' },
+        end: { type: 'string', description: '结束日期' },
+        days: { type: 'number', description: '可用工作日' },
+        PM: { type: 'string', description: '迭代负责人' },
+        desc: { type: 'string', description: '描述' },
+      },
+      required: ['id'],
+    },
+  },
+  // 测试单相关工具
+  {
+    name: 'zentao_get_testtasks',
+    description: '获取测试单列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        productID: { type: 'number', description: '产品 ID（可选）' },
+        limit: { type: 'number', description: '返回数量限制，默认 100' },
+      },
+      required: [],
+    },
+  },
+  {
+    name: 'zentao_get_project_testtasks',
+    description: '获取项目测试单列表',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        projectID: { type: 'number', description: '项目 ID' },
+      },
+      required: ['projectID'],
+    },
+  },
+  {
+    name: 'zentao_get_testtask',
+    description: '获取测试单详情',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        testtaskID: { type: 'number', description: '测试单 ID' },
+      },
+      required: ['testtaskID'],
     },
   },
 ];
@@ -707,26 +1355,47 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'zentao_create_bug': {
-        const { product, title, severity, pri, steps, type, module, assignedTo, project } =
-          args as {
-            product: number;
-            title: string;
-            severity?: BugSeverity;
-            pri?: number;
-            steps?: string;
-            type?: string;
-            module?: number;
-            assignedTo?: string;
-            project?: number;
-          };
+        const {
+          product, title, severity, pri, type,
+          branch, module, execution, keywords, os, browser,
+          steps, task, story, deadline, openedBuild, assignedTo, project
+        } = args as {
+          product: number;
+          title: string;
+          severity: BugSeverity;
+          pri: number;
+          type: BugType;
+          branch?: number;
+          module?: number;
+          execution?: number;
+          keywords?: string;
+          os?: string;
+          browser?: string;
+          steps?: string;
+          task?: number;
+          story?: number;
+          deadline?: string;
+          openedBuild?: string[];
+          assignedTo?: string;
+          project?: number;
+        };
         result = await zentaoClient.createBug({
           product,
           title,
           severity,
           pri,
-          steps,
           type,
+          branch,
           module,
+          execution,
+          keywords,
+          os,
+          browser,
+          steps,
+          task,
+          story,
+          deadline,
+          openedBuild,
           assignedTo,
           project,
         });
@@ -812,30 +1481,34 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'zentao_create_story': {
-        const { product, title, spec, verify, pri, estimate, module, plan, source, sourceNote } =
+        const { product, title, category, pri, spec, verify, estimate, module, plan, source, sourceNote, keywords } =
           args as {
             product: number;
             title: string;
+            category: StoryCategory;
+            pri: number;
             spec?: string;
             verify?: string;
-            pri?: number;
             estimate?: number;
             module?: number;
             plan?: number;
             source?: string;
             sourceNote?: string;
+            keywords?: string;
           };
         result = await zentaoClient.createStory({
           product,
           title,
+          category,
+          pri,
           spec,
           verify,
-          pri,
           estimate,
           module,
           plan,
           source,
           sourceNote,
+          keywords,
         });
         break;
       }
@@ -964,13 +1637,572 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
 
-      case 'zentao_delete_testcase': {
-        const { caseID } = args as { caseID: number };
-        const success = await zentaoClient.deleteTestCase(caseID);
+      // Bug 更新相关
+      case 'zentao_update_bug': {
+        const { id, title, severity, pri, type, steps, module, deadline } = args as {
+          id: number;
+          title?: string;
+          severity?: BugSeverity;
+          pri?: number;
+          type?: string;
+          steps?: string;
+          module?: number;
+          deadline?: string;
+        };
+        result = await zentaoClient.updateBug({ id, title, severity, pri, type, steps, module, deadline });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `Bug #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      // 需求更新/变更相关
+      case 'zentao_update_story': {
+        const { id, module, source, sourceNote, pri, category, estimate, keywords } = args as {
+          id: number;
+          module?: number;
+          source?: string;
+          sourceNote?: string;
+          pri?: number;
+          category?: string;
+          estimate?: number;
+          keywords?: string;
+        };
+        result = await zentaoClient.updateStory({ id, module, source, sourceNote, pri, category, estimate, keywords });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `需求 #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_change_story': {
+        const { id, title, spec, verify } = args as {
+          id: number;
+          title?: string;
+          spec?: string;
+          verify?: string;
+        };
+        result = await zentaoClient.changeStory({ id, title, spec, verify });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `需求 #${id} 变更失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      // 产品详情/创建/更新相关
+      case 'zentao_get_product': {
+        const { productID } = args as { productID: number };
+        result = await zentaoClient.getProduct(productID);
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `产品 #${productID} 不存在或无权限查看` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_create_product': {
+        const { name, code, program, PO, QD, RD, type, desc, acl } = args as {
+          name: string;
+          code: string;
+          program?: number;
+          PO?: string;
+          QD?: string;
+          RD?: string;
+          type?: 'normal' | 'branch' | 'platform';
+          desc?: string;
+          acl?: 'open' | 'private';
+        };
+        result = await zentaoClient.createProduct({ name, code, program, PO, QD, RD, type, desc, acl });
+        break;
+      }
+
+      case 'zentao_update_product': {
+        const { id, name, code, desc, PO, QD, RD, status } = args as {
+          id: number;
+          name?: string;
+          code?: string;
+          desc?: string;
+          PO?: string;
+          QD?: string;
+          RD?: string;
+          status?: string;
+        };
+        result = await zentaoClient.updateProduct({ id, name, code, desc, PO, QD, RD, status });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `产品 #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      // 项目详情/创建/更新相关
+      case 'zentao_get_project': {
+        const { projectID } = args as { projectID: number };
+        result = await zentaoClient.getProject(projectID);
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `项目 #${projectID} 不存在或无权限查看` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_create_project': {
+        const { name, code, begin, end, products, model, parent } = args as {
+          name: string;
+          code: string;
+          begin: string;
+          end: string;
+          products: number[];
+          model?: 'scrum' | 'waterfall';
+          parent?: number;
+        };
+        result = await zentaoClient.createProject({ name, code, begin, end, products, model, parent });
+        break;
+      }
+
+      case 'zentao_update_project': {
+        const { id, name, code, PM, desc, days } = args as {
+          id: number;
+          name?: string;
+          code?: string;
+          PM?: string;
+          desc?: string;
+          days?: number;
+        };
+        result = await zentaoClient.updateProject({ id, name, code, PM, desc, days });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `项目 #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      // 任务相关
+      case 'zentao_get_tasks': {
+        const { executionID, limit } = args as { executionID: number; limit?: number };
+        result = await zentaoClient.getTasks(executionID, limit);
+        break;
+      }
+
+      case 'zentao_get_task': {
+        const { taskID } = args as { taskID: number };
+        result = await zentaoClient.getTask(taskID);
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `任务 #${taskID} 不存在或无权限查看` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_create_task': {
+        const { execution, name, type, assignedTo, estStarted, deadline, story, pri, estimate, desc } = args as {
+          execution: number;
+          name: string;
+          type: TaskType;
+          assignedTo: string[];
+          estStarted: string;
+          deadline: string;
+          story?: number;
+          pri?: number;
+          estimate?: number;
+          desc?: string;
+        };
+        result = await zentaoClient.createTask({ execution, name, type, assignedTo, estStarted, deadline, story, pri, estimate, desc });
+        break;
+      }
+
+      case 'zentao_update_task': {
+        const { id, name, type, assignedTo, pri, estimate, deadline, desc } = args as {
+          id: number;
+          name?: string;
+          type?: TaskType;
+          assignedTo?: string[];
+          pri?: number;
+          estimate?: number;
+          deadline?: string;
+          desc?: string;
+        };
+        result = await zentaoClient.updateTask({ id, name, type, assignedTo, pri, estimate, deadline, desc });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `任务 #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      // 用户相关
+      case 'zentao_get_users': {
+        const { limit } = (args as { limit?: number }) || {};
+        result = await zentaoClient.getUsers(limit);
+        break;
+      }
+
+      case 'zentao_get_user': {
+        const { userID } = args as { userID: number };
+        result = await zentaoClient.getUser(userID);
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `用户 #${userID} 不存在或无权限查看` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_get_my_profile': {
+        result = await zentaoClient.getMyProfile();
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: '获取当前用户信息失败' }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_create_user': {
+        const { account, password, realname, gender, role, dept, email, mobile } = args as {
+          account: string;
+          password: string;
+          realname?: string;
+          gender?: 'm' | 'f';
+          role?: string;
+          dept?: number;
+          email?: string;
+          mobile?: string;
+        };
+        result = await zentaoClient.createUser({ account, password, realname, gender, role, dept, email, mobile });
+        break;
+      }
+
+      case 'zentao_update_user': {
+        const { id, realname, role, dept, email, mobile } = args as {
+          id: number;
+          realname?: string;
+          role?: string;
+          dept?: number;
+          email?: string;
+          mobile?: string;
+        };
+        result = await zentaoClient.updateUser({ id, realname, role, dept, email, mobile });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `用户 #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      // 项目集相关
+      case 'zentao_get_programs': {
+        const { limit } = (args as { limit?: number }) || {};
+        result = await zentaoClient.getPrograms(limit);
+        break;
+      }
+
+      case 'zentao_get_program': {
+        const { programID } = args as { programID: number };
+        result = await zentaoClient.getProgram(programID);
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `项目集 #${programID} 不存在或无权限查看` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_create_program': {
+        const { name, begin, end, parent, PM, budget, desc } = args as {
+          name: string;
+          begin: string;
+          end: string;
+          parent?: number;
+          PM?: string;
+          budget?: number;
+          desc?: string;
+        };
+        result = await zentaoClient.createProgram({ name, begin, end, parent, PM, budget, desc });
+        break;
+      }
+
+      case 'zentao_update_program': {
+        const { id, name, PM, budget, desc, begin, end } = args as {
+          id: number;
+          name?: string;
+          PM?: string;
+          budget?: number;
+          desc?: string;
+          begin?: string;
+          end?: string;
+        };
+        result = await zentaoClient.updateProgram({ id, name, PM, budget, desc, begin, end });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `项目集 #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      // 计划相关
+      case 'zentao_get_plans': {
+        const { productID, limit } = args as { productID: number; limit?: number };
+        result = await zentaoClient.getPlans(productID, limit);
+        break;
+      }
+
+      case 'zentao_get_plan': {
+        const { planID } = args as { planID: number };
+        result = await zentaoClient.getPlan(planID);
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `计划 #${planID} 不存在或无权限查看` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_create_plan': {
+        const { product, title, begin, end, desc } = args as {
+          product: number;
+          title: string;
+          begin?: string;
+          end?: string;
+          desc?: string;
+        };
+        result = await zentaoClient.createPlan({ product, title, begin, end, desc });
+        break;
+      }
+
+      case 'zentao_update_plan': {
+        const { id, title, begin, end, desc } = args as {
+          id: number;
+          title?: string;
+          begin?: string;
+          end?: string;
+          desc?: string;
+        };
+        result = await zentaoClient.updatePlan({ id, title, begin, end, desc });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `计划 #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_link_stories_to_plan': {
+        const { planID, stories } = args as { planID: number; stories: number[] };
+        const success = await zentaoClient.linkStoriesToPlan(planID, stories);
         result = {
           success,
-          message: success ? `测试用例 #${caseID} 已删除` : `测试用例 #${caseID} 删除失败`,
+          message: success ? `计划 #${planID} 已关联 ${stories.length} 个需求` : '关联需求失败',
         };
+        break;
+      }
+
+      case 'zentao_unlink_stories_from_plan': {
+        const { planID, stories } = args as { planID: number; stories: number[] };
+        const success = await zentaoClient.unlinkStoriesFromPlan(planID, stories);
+        result = {
+          success,
+          message: success ? `计划 #${planID} 已取消关联 ${stories.length} 个需求` : '取消关联需求失败',
+        };
+        break;
+      }
+
+      case 'zentao_link_bugs_to_plan': {
+        const { planID, bugs } = args as { planID: number; bugs: number[] };
+        const success = await zentaoClient.linkBugsToPlan(planID, bugs);
+        result = {
+          success,
+          message: success ? `计划 #${planID} 已关联 ${bugs.length} 个 Bug` : '关联 Bug 失败',
+        };
+        break;
+      }
+
+      case 'zentao_unlink_bugs_from_plan': {
+        const { planID, bugs } = args as { planID: number; bugs: number[] };
+        const success = await zentaoClient.unlinkBugsFromPlan(planID, bugs);
+        result = {
+          success,
+          message: success ? `计划 #${planID} 已取消关联 ${bugs.length} 个 Bug` : '取消关联 Bug 失败',
+        };
+        break;
+      }
+
+      // 发布相关
+      case 'zentao_get_project_releases': {
+        const { projectID } = args as { projectID: number };
+        result = await zentaoClient.getProjectReleases(projectID);
+        break;
+      }
+
+      case 'zentao_get_product_releases': {
+        const { productID } = args as { productID: number };
+        result = await zentaoClient.getProductReleases(productID);
+        break;
+      }
+
+      // 版本相关
+      case 'zentao_get_project_builds': {
+        const { projectID } = args as { projectID: number };
+        result = await zentaoClient.getProjectBuilds(projectID);
+        break;
+      }
+
+      case 'zentao_get_execution_builds': {
+        const { executionID } = args as { executionID: number };
+        result = await zentaoClient.getExecutionBuilds(executionID);
+        break;
+      }
+
+      case 'zentao_get_build': {
+        const { buildID } = args as { buildID: number };
+        result = await zentaoClient.getBuild(buildID);
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `版本 #${buildID} 不存在或无权限查看` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_create_build': {
+        const { project, name, execution, product, builder, date, scmPath, filePath, desc } = args as {
+          project: number;
+          name: string;
+          execution: number;
+          product: number;
+          builder: string;
+          date?: string;
+          scmPath?: string;
+          filePath?: string;
+          desc?: string;
+        };
+        result = await zentaoClient.createBuild({ project, name, execution, product, builder, date, scmPath, filePath, desc });
+        break;
+      }
+
+      case 'zentao_update_build': {
+        const { id, name, scmPath, filePath, desc, builder, date } = args as {
+          id: number;
+          name?: string;
+          scmPath?: string;
+          filePath?: string;
+          desc?: string;
+          builder?: string;
+          date?: string;
+        };
+        result = await zentaoClient.updateBuild({ id, name, scmPath, filePath, desc, builder, date });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `版本 #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      // 执行（迭代）相关
+      case 'zentao_get_execution': {
+        const { executionID } = args as { executionID: number };
+        result = await zentaoClient.getExecution(executionID);
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `执行 #${executionID} 不存在或无权限查看` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      case 'zentao_create_execution': {
+        const { project, name, code, begin, end, days, PM, teamMembers, desc } = args as {
+          project: number;
+          name: string;
+          code: string;
+          begin: string;
+          end: string;
+          days?: number;
+          PM?: string;
+          teamMembers?: string[];
+          desc?: string;
+        };
+        result = await zentaoClient.createExecution({ project, name, code, begin, end, days, PM, teamMembers, desc });
+        break;
+      }
+
+      case 'zentao_update_execution': {
+        const { id, name, code, begin, end, days, PM, desc } = args as {
+          id: number;
+          name?: string;
+          code?: string;
+          begin?: string;
+          end?: string;
+          days?: number;
+          PM?: string;
+          desc?: string;
+        };
+        result = await zentaoClient.updateExecution({ id, name, code, begin, end, days, PM, desc });
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `执行 #${id} 更新失败` }],
+            isError: true,
+          };
+        }
+        break;
+      }
+
+      // 测试单相关
+      case 'zentao_get_testtasks': {
+        const { productID, limit } = (args as { productID?: number; limit?: number }) || {};
+        result = await zentaoClient.getTestTasks(productID, limit);
+        break;
+      }
+
+      case 'zentao_get_project_testtasks': {
+        const { projectID } = args as { projectID: number };
+        result = await zentaoClient.getProjectTestTasks(projectID);
+        break;
+      }
+
+      case 'zentao_get_testtask': {
+        const { testtaskID } = args as { testtaskID: number };
+        result = await zentaoClient.getTestTask(testtaskID);
+        if (!result) {
+          return {
+            content: [{ type: 'text', text: `测试单 #${testtaskID} 不存在或无权限查看` }],
+            isError: true,
+          };
+        }
         break;
       }
 

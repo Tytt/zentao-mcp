@@ -42845,16 +42845,39 @@ var ZentaoClient = class {
    */
   async createBug(params) {
     await this.ensureLogin();
-    const response = await this.http.post(`/api.php/v1/products/${params.product}/bugs`, {
+    const data = {
       title: params.title,
-      severity: params.severity || 3,
-      pri: params.pri || 3,
-      steps: params.steps || "",
-      type: params.type || "codeerror",
-      module: params.module || 0,
-      assignedTo: params.assignedTo || "",
-      project: params.project || 0
-    });
+      severity: params.severity,
+      pri: params.pri,
+      type: params.type
+    };
+    if (params.branch !== void 0)
+      data.branch = params.branch;
+    if (params.module !== void 0)
+      data.module = params.module;
+    if (params.execution !== void 0)
+      data.execution = params.execution;
+    if (params.keywords !== void 0)
+      data.keywords = params.keywords;
+    if (params.os !== void 0)
+      data.os = params.os;
+    if (params.browser !== void 0)
+      data.browser = params.browser;
+    if (params.steps !== void 0)
+      data.steps = params.steps;
+    if (params.task !== void 0)
+      data.task = params.task;
+    if (params.story !== void 0)
+      data.story = params.story;
+    if (params.deadline !== void 0)
+      data.deadline = params.deadline;
+    if (params.openedBuild !== void 0)
+      data.openedBuild = params.openedBuild;
+    if (params.assignedTo !== void 0)
+      data.assignedTo = params.assignedTo;
+    if (params.project !== void 0)
+      data.project = params.project;
+    const response = await this.http.post(`/api.php/v1/products/${params.product}/bugs`, data);
     return response.data.data || response.data;
   }
   /**
@@ -42976,17 +42999,29 @@ var ZentaoClient = class {
    */
   async createStory(params) {
     await this.ensureLogin();
-    const response = await this.http.post(`/api.php/v1/products/${params.product}/stories`, {
+    const data = {
+      product: params.product,
       title: params.title,
-      spec: params.spec || "",
-      verify: params.verify || "",
-      pri: params.pri || 3,
-      estimate: params.estimate || 0,
-      module: params.module || 0,
-      plan: params.plan || 0,
-      source: params.source || "",
-      sourceNote: params.sourceNote || ""
-    });
+      category: params.category,
+      pri: params.pri
+    };
+    if (params.spec !== void 0)
+      data.spec = params.spec;
+    if (params.verify !== void 0)
+      data.verify = params.verify;
+    if (params.estimate !== void 0)
+      data.estimate = params.estimate;
+    if (params.module !== void 0)
+      data.module = params.module;
+    if (params.plan !== void 0)
+      data.plan = params.plan;
+    if (params.source !== void 0)
+      data.source = params.source;
+    if (params.sourceNote !== void 0)
+      data.sourceNote = params.sourceNote;
+    if (params.keywords !== void 0)
+      data.keywords = params.keywords;
+    const response = await this.http.post("/api.php/v1/stories", data);
     return response.data.data || response.data;
   }
   /**
@@ -43137,19 +43172,930 @@ var ZentaoClient = class {
     const response = await this.http.put(`/api.php/v1/testcases/${params.id}`, updateData);
     return response.data;
   }
+  // ==================== Bug 更新相关方法 ====================
   /**
-   * 删除测试用例
-   * @param caseID - 用例 ID
-   * @returns 是否删除成功
+   * 更新 Bug
+   * @param params - 更新 Bug 参数
+   * @returns 更新后的 Bug
    */
-  async deleteTestCase(caseID) {
+  async updateBug(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.title !== void 0)
+      updateData.title = params.title;
+    if (params.severity !== void 0)
+      updateData.severity = params.severity;
+    if (params.pri !== void 0)
+      updateData.pri = params.pri;
+    if (params.type !== void 0)
+      updateData.type = params.type;
+    if (params.module !== void 0)
+      updateData.module = params.module;
+    if (params.execution !== void 0)
+      updateData.execution = params.execution;
+    if (params.keywords !== void 0)
+      updateData.keywords = params.keywords;
+    if (params.os !== void 0)
+      updateData.os = params.os;
+    if (params.browser !== void 0)
+      updateData.browser = params.browser;
+    if (params.steps !== void 0)
+      updateData.steps = params.steps;
+    if (params.task !== void 0)
+      updateData.task = params.task;
+    if (params.story !== void 0)
+      updateData.story = params.story;
+    if (params.deadline !== void 0)
+      updateData.deadline = params.deadline;
+    if (params.openedBuild !== void 0)
+      updateData.openedBuild = params.openedBuild;
+    try {
+      const response = await this.http.put(`/api.php/v1/bugs/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  // ==================== 需求更新/变更相关方法 ====================
+  /**
+   * 更新需求
+   * @param params - 更新需求参数
+   * @returns 更新后的需求
+   */
+  async updateStory(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.module !== void 0)
+      updateData.module = params.module;
+    if (params.source !== void 0)
+      updateData.source = params.source;
+    if (params.sourceNote !== void 0)
+      updateData.sourceNote = params.sourceNote;
+    if (params.pri !== void 0)
+      updateData.pri = params.pri;
+    if (params.category !== void 0)
+      updateData.category = params.category;
+    if (params.estimate !== void 0)
+      updateData.estimate = params.estimate;
+    if (params.keywords !== void 0)
+      updateData.keywords = params.keywords;
+    try {
+      const response = await this.http.put(`/api.php/v1/stories/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 变更需求（修改标题、描述、验收标准，会导致状态变为 changed）
+   * @param params - 变更需求参数
+   * @returns 变更后的需求
+   */
+  async changeStory(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.title !== void 0)
+      updateData.title = params.title;
+    if (params.spec !== void 0)
+      updateData.spec = params.spec;
+    if (params.verify !== void 0)
+      updateData.verify = params.verify;
+    try {
+      const response = await this.http.post(`/api.php/v1/stories/${params.id}/change`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  // ==================== 产品详情/创建/更新相关方法 ====================
+  /**
+   * 获取产品详情
+   * @param productID - 产品 ID
+   * @returns 产品详情
+   */
+  async getProduct(productID) {
     await this.ensureLogin();
     try {
-      await this.http.delete(`/api.php/v1/testcases/${caseID}`);
+      const response = await this.http.get(`/api.php/v1/products/${productID}`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 创建产品
+   * @param params - 创建产品参数
+   * @returns 新创建的产品
+   */
+  async createProduct(params) {
+    await this.ensureLogin();
+    const data = {
+      name: params.name,
+      code: params.code
+    };
+    if (params.program !== void 0)
+      data.program = params.program;
+    if (params.line !== void 0)
+      data.line = params.line;
+    if (params.PO !== void 0)
+      data.PO = params.PO;
+    if (params.QD !== void 0)
+      data.QD = params.QD;
+    if (params.RD !== void 0)
+      data.RD = params.RD;
+    if (params.type !== void 0)
+      data.type = params.type;
+    if (params.desc !== void 0)
+      data.desc = params.desc;
+    if (params.acl !== void 0)
+      data.acl = params.acl;
+    if (params.whitelist !== void 0)
+      data.whitelist = params.whitelist;
+    const response = await this.http.post("/api.php/v1/products", data);
+    return response.data.data || response.data;
+  }
+  /**
+   * 更新产品
+   * @param params - 更新产品参数
+   * @returns 更新后的产品
+   */
+  async updateProduct(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.name !== void 0)
+      updateData.name = params.name;
+    if (params.code !== void 0)
+      updateData.code = params.code;
+    if (params.program !== void 0)
+      updateData.program = params.program;
+    if (params.line !== void 0)
+      updateData.line = params.line;
+    if (params.type !== void 0)
+      updateData.type = params.type;
+    if (params.status !== void 0)
+      updateData.status = params.status;
+    if (params.desc !== void 0)
+      updateData.desc = params.desc;
+    if (params.PO !== void 0)
+      updateData.PO = params.PO;
+    if (params.QD !== void 0)
+      updateData.QD = params.QD;
+    if (params.RD !== void 0)
+      updateData.RD = params.RD;
+    if (params.acl !== void 0)
+      updateData.acl = params.acl;
+    if (params.whitelist !== void 0)
+      updateData.whitelist = params.whitelist;
+    try {
+      const response = await this.http.put(`/api.php/v1/products/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  // ==================== 项目详情/创建/更新相关方法 ====================
+  /**
+   * 获取项目详情
+   * @param projectID - 项目 ID
+   * @returns 项目详情
+   */
+  async getProject(projectID) {
+    await this.ensureLogin();
+    try {
+      const response = await this.http.get(`/api.php/v1/projects/${projectID}`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 创建项目
+   * @param params - 创建项目参数
+   * @returns 新创建的项目
+   */
+  async createProject(params) {
+    await this.ensureLogin();
+    const response = await this.http.post("/api.php/v1/projects", {
+      name: params.name,
+      code: params.code,
+      begin: params.begin,
+      end: params.end,
+      products: params.products,
+      model: params.model || "scrum",
+      parent: params.parent || 0
+    });
+    return response.data.data || response.data;
+  }
+  /**
+   * 更新项目
+   * @param params - 更新项目参数
+   * @returns 更新后的项目
+   */
+  async updateProject(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.name !== void 0)
+      updateData.name = params.name;
+    if (params.code !== void 0)
+      updateData.code = params.code;
+    if (params.parent !== void 0)
+      updateData.parent = params.parent;
+    if (params.PM !== void 0)
+      updateData.PM = params.PM;
+    if (params.budget !== void 0)
+      updateData.budget = params.budget;
+    if (params.budgetUnit !== void 0)
+      updateData.budgetUnit = params.budgetUnit;
+    if (params.days !== void 0)
+      updateData.days = params.days;
+    if (params.desc !== void 0)
+      updateData.desc = params.desc;
+    if (params.acl !== void 0)
+      updateData.acl = params.acl;
+    if (params.whitelist !== void 0)
+      updateData.whitelist = params.whitelist;
+    if (params.auth !== void 0)
+      updateData.auth = params.auth;
+    try {
+      const response = await this.http.put(`/api.php/v1/projects/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  // ==================== 任务相关方法 ====================
+  /**
+   * 获取执行的任务列表
+   * @param executionID - 执行 ID
+   * @param limit - 返回数量限制
+   * @returns 任务列表
+   */
+  async getTasks(executionID, limit = 100) {
+    await this.ensureLogin();
+    const response = await this.http.get(`/api.php/v1/executions/${executionID}/tasks?limit=${limit}`);
+    return response.data.data || response.data.tasks || [];
+  }
+  /**
+   * 获取任务详情
+   * @param taskID - 任务 ID
+   * @returns 任务详情
+   */
+  async getTask(taskID) {
+    await this.ensureLogin();
+    try {
+      const response = await this.http.get(`/api.php/v1/tasks/${taskID}`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 创建任务
+   * @param params - 创建任务参数
+   * @returns 新创建的任务
+   */
+  async createTask(params) {
+    await this.ensureLogin();
+    const data = {
+      name: params.name,
+      type: params.type,
+      assignedTo: params.assignedTo,
+      estStarted: params.estStarted,
+      deadline: params.deadline
+    };
+    if (params.module !== void 0)
+      data.module = params.module;
+    if (params.story !== void 0)
+      data.story = params.story;
+    if (params.fromBug !== void 0)
+      data.fromBug = params.fromBug;
+    if (params.pri !== void 0)
+      data.pri = params.pri;
+    if (params.estimate !== void 0)
+      data.estimate = params.estimate;
+    if (params.desc !== void 0)
+      data.desc = params.desc;
+    const response = await this.http.post(`/api.php/v1/executions/${params.execution}/tasks`, data);
+    return response.data.data || response.data;
+  }
+  /**
+   * 更新任务
+   * @param params - 更新任务参数
+   * @returns 更新后的任务
+   */
+  async updateTask(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.name !== void 0)
+      updateData.name = params.name;
+    if (params.type !== void 0)
+      updateData.type = params.type;
+    if (params.assignedTo !== void 0)
+      updateData.assignedTo = params.assignedTo;
+    if (params.module !== void 0)
+      updateData.module = params.module;
+    if (params.story !== void 0)
+      updateData.story = params.story;
+    if (params.fromBug !== void 0)
+      updateData.fromBug = params.fromBug;
+    if (params.pri !== void 0)
+      updateData.pri = params.pri;
+    if (params.estimate !== void 0)
+      updateData.estimate = params.estimate;
+    if (params.estStarted !== void 0)
+      updateData.estStarted = params.estStarted;
+    if (params.deadline !== void 0)
+      updateData.deadline = params.deadline;
+    if (params.desc !== void 0)
+      updateData.desc = params.desc;
+    try {
+      const response = await this.http.put(`/api.php/v1/tasks/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  // ==================== 用户相关方法 ====================
+  /**
+   * 获取用户列表
+   * @param limit - 返回数量限制
+   * @returns 用户列表
+   */
+  async getUsers(limit = 100) {
+    await this.ensureLogin();
+    const response = await this.http.get(`/api.php/v1/users?limit=${limit}`);
+    return response.data.data || response.data.users || [];
+  }
+  /**
+   * 获取用户详情
+   * @param userID - 用户 ID
+   * @returns 用户详情
+   */
+  async getUser(userID) {
+    await this.ensureLogin();
+    try {
+      const response = await this.http.get(`/api.php/v1/users/${userID}`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 获取当前登录用户信息
+   * @returns 当前用户信息
+   */
+  async getMyProfile() {
+    await this.ensureLogin();
+    try {
+      const response = await this.http.get("/api.php/v1/user");
+      return response.data.data?.profile || response.data.profile || null;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 创建用户
+   * @param params - 创建用户参数
+   * @returns 新创建的用户
+   */
+  async createUser(params) {
+    await this.ensureLogin();
+    const data = {
+      account: params.account,
+      password: params.password,
+      gender: params.gender || "m"
+    };
+    if (params.realname !== void 0)
+      data.realname = params.realname;
+    if (params.visions !== void 0)
+      data.visions = params.visions;
+    if (params.role !== void 0)
+      data.role = params.role;
+    if (params.dept !== void 0)
+      data.dept = params.dept;
+    if (params.email !== void 0)
+      data.email = params.email;
+    if (params.mobile !== void 0)
+      data.mobile = params.mobile;
+    if (params.phone !== void 0)
+      data.phone = params.phone;
+    if (params.weixin !== void 0)
+      data.weixin = params.weixin;
+    if (params.qq !== void 0)
+      data.qq = params.qq;
+    if (params.address !== void 0)
+      data.address = params.address;
+    if (params.join !== void 0)
+      data.join = params.join;
+    const response = await this.http.post("/api.php/v1/users", data);
+    return response.data.data || response.data;
+  }
+  /**
+   * 更新用户
+   * @param params - 更新用户参数
+   * @returns 更新后的用户
+   */
+  async updateUser(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.realname !== void 0)
+      updateData.realname = params.realname;
+    if (params.role !== void 0)
+      updateData.role = params.role;
+    if (params.dept !== void 0)
+      updateData.dept = params.dept;
+    if (params.email !== void 0)
+      updateData.email = params.email;
+    if (params.gender !== void 0)
+      updateData.gender = params.gender;
+    if (params.mobile !== void 0)
+      updateData.mobile = params.mobile;
+    if (params.phone !== void 0)
+      updateData.phone = params.phone;
+    if (params.weixin !== void 0)
+      updateData.weixin = params.weixin;
+    if (params.qq !== void 0)
+      updateData.qq = params.qq;
+    if (params.address !== void 0)
+      updateData.address = params.address;
+    if (params.join !== void 0)
+      updateData.join = params.join;
+    if (params.password !== void 0)
+      updateData.password = params.password;
+    try {
+      const response = await this.http.put(`/api.php/v1/users/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  // ==================== 项目集相关方法 ====================
+  /**
+   * 获取项目集列表
+   * @param limit - 返回数量限制
+   * @returns 项目集列表
+   */
+  async getPrograms(limit = 100) {
+    await this.ensureLogin();
+    const response = await this.http.get(`/api.php/v1/programs?limit=${limit}`);
+    return response.data.data || response.data.programs || [];
+  }
+  /**
+   * 获取项目集详情
+   * @param programID - 项目集 ID
+   * @returns 项目集详情
+   */
+  async getProgram(programID) {
+    await this.ensureLogin();
+    try {
+      const response = await this.http.get(`/api.php/v1/programs/${programID}`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 创建项目集
+   * @param params - 创建项目集参数
+   * @returns 新创建的项目集
+   */
+  async createProgram(params) {
+    await this.ensureLogin();
+    const data = {
+      name: params.name,
+      begin: params.begin,
+      end: params.end,
+      parent: params.parent || 0
+    };
+    if (params.PM !== void 0)
+      data.PM = params.PM;
+    if (params.budget !== void 0)
+      data.budget = params.budget;
+    if (params.budgetUnit !== void 0)
+      data.budgetUnit = params.budgetUnit;
+    if (params.desc !== void 0)
+      data.desc = params.desc;
+    if (params.acl !== void 0)
+      data.acl = params.acl;
+    if (params.whitelist !== void 0)
+      data.whitelist = params.whitelist;
+    const response = await this.http.post("/api.php/v1/programs", data);
+    return response.data.data || response.data;
+  }
+  /**
+   * 更新项目集
+   * @param params - 更新项目集参数
+   * @returns 更新后的项目集
+   */
+  async updateProgram(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.name !== void 0)
+      updateData.name = params.name;
+    if (params.parent !== void 0)
+      updateData.parent = params.parent;
+    if (params.PM !== void 0)
+      updateData.PM = params.PM;
+    if (params.budget !== void 0)
+      updateData.budget = params.budget;
+    if (params.budgetUnit !== void 0)
+      updateData.budgetUnit = params.budgetUnit;
+    if (params.desc !== void 0)
+      updateData.desc = params.desc;
+    if (params.begin !== void 0)
+      updateData.begin = params.begin;
+    if (params.end !== void 0)
+      updateData.end = params.end;
+    if (params.acl !== void 0)
+      updateData.acl = params.acl;
+    if (params.whitelist !== void 0)
+      updateData.whitelist = params.whitelist;
+    try {
+      const response = await this.http.put(`/api.php/v1/programs/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  // ==================== 计划相关方法 ====================
+  /**
+   * 获取产品计划列表
+   * @param productID - 产品 ID
+   * @param limit - 返回数量限制
+   * @returns 计划列表
+   */
+  async getPlans(productID, limit = 100) {
+    await this.ensureLogin();
+    const response = await this.http.get(`/api.php/v1/products/${productID}/plans?limit=${limit}`);
+    return response.data.data || response.data.plans || [];
+  }
+  /**
+   * 获取计划详情
+   * @param planID - 计划 ID
+   * @returns 计划详情
+   */
+  async getPlan(planID) {
+    await this.ensureLogin();
+    try {
+      const response = await this.http.get(`/api.php/v1/productplans/${planID}`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 创建计划
+   * @param params - 创建计划参数
+   * @returns 新创建的计划
+   */
+  async createPlan(params) {
+    await this.ensureLogin();
+    const data = {
+      title: params.title
+    };
+    if (params.begin !== void 0)
+      data.begin = params.begin;
+    if (params.end !== void 0)
+      data.end = params.end;
+    if (params.branch !== void 0)
+      data.branch = params.branch;
+    if (params.parent !== void 0)
+      data.parent = params.parent;
+    if (params.desc !== void 0)
+      data.desc = params.desc;
+    const response = await this.http.post(`/api.php/v1/products/${params.product}/plans`, data);
+    return response.data.data || response.data;
+  }
+  /**
+   * 更新计划
+   * @param params - 更新计划参数
+   * @returns 更新后的计划
+   */
+  async updatePlan(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.title !== void 0)
+      updateData.title = params.title;
+    if (params.begin !== void 0)
+      updateData.begin = params.begin;
+    if (params.end !== void 0)
+      updateData.end = params.end;
+    if (params.branch !== void 0)
+      updateData.branch = params.branch;
+    if (params.desc !== void 0)
+      updateData.desc = params.desc;
+    try {
+      const response = await this.http.put(`/api.php/v1/productplans/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 计划关联需求
+   * @param planID - 计划 ID
+   * @param stories - 需求 ID 列表
+   * @returns 是否成功
+   */
+  async linkStoriesToPlan(planID, stories) {
+    await this.ensureLogin();
+    try {
+      await this.http.post(`/api.php/v1/productplans/${planID}/linkstories`, { stories });
       return true;
     } catch (error2) {
-      console.error("\u5220\u9664\u6D4B\u8BD5\u7528\u4F8B\u5931\u8D25:", error2);
+      console.error("\u8BA1\u5212\u5173\u8054\u9700\u6C42\u5931\u8D25:", error2);
       return false;
+    }
+  }
+  /**
+   * 计划取消关联需求
+   * @param planID - 计划 ID
+   * @param stories - 需求 ID 列表
+   * @returns 是否成功
+   */
+  async unlinkStoriesFromPlan(planID, stories) {
+    await this.ensureLogin();
+    try {
+      await this.http.post(`/api.php/v1/productplans/${planID}/unlinkstories`, { stories });
+      return true;
+    } catch (error2) {
+      console.error("\u8BA1\u5212\u53D6\u6D88\u5173\u8054\u9700\u6C42\u5931\u8D25:", error2);
+      return false;
+    }
+  }
+  /**
+   * 计划关联 Bug
+   * @param planID - 计划 ID
+   * @param bugs - Bug ID 列表
+   * @returns 是否成功
+   */
+  async linkBugsToPlan(planID, bugs) {
+    await this.ensureLogin();
+    try {
+      await this.http.post(`/api.php/v1/productplans/${planID}/linkbugs`, { bugs });
+      return true;
+    } catch (error2) {
+      console.error("\u8BA1\u5212\u5173\u8054 Bug \u5931\u8D25:", error2);
+      return false;
+    }
+  }
+  /**
+   * 计划取消关联 Bug
+   * @param planID - 计划 ID
+   * @param bugs - Bug ID 列表
+   * @returns 是否成功
+   */
+  async unlinkBugsFromPlan(planID, bugs) {
+    await this.ensureLogin();
+    try {
+      await this.http.post(`/api.php/v1/productplans/${planID}/unlinkbugs`, { bugs });
+      return true;
+    } catch (error2) {
+      console.error("\u8BA1\u5212\u53D6\u6D88\u5173\u8054 Bug \u5931\u8D25:", error2);
+      return false;
+    }
+  }
+  // ==================== 发布相关方法 ====================
+  /**
+   * 获取项目发布列表
+   * @param projectID - 项目 ID
+   * @returns 发布列表
+   */
+  async getProjectReleases(projectID) {
+    await this.ensureLogin();
+    const response = await this.http.get(`/api.php/v1/projects/${projectID}/releases`);
+    return response.data.data || response.data.releases || [];
+  }
+  /**
+   * 获取产品发布列表
+   * @param productID - 产品 ID
+   * @returns 发布列表
+   */
+  async getProductReleases(productID) {
+    await this.ensureLogin();
+    const response = await this.http.get(`/api.php/v1/products/${productID}/releases`);
+    return response.data.data || response.data.releases || [];
+  }
+  // ==================== 版本相关方法 ====================
+  /**
+   * 获取项目版本列表
+   * @param projectID - 项目 ID
+   * @returns 版本列表
+   */
+  async getProjectBuilds(projectID) {
+    await this.ensureLogin();
+    const response = await this.http.get(`/api.php/v1/projects/${projectID}/builds`);
+    return response.data.data || response.data.builds || [];
+  }
+  /**
+   * 获取执行版本列表
+   * @param executionID - 执行 ID
+   * @returns 版本列表
+   */
+  async getExecutionBuilds(executionID) {
+    await this.ensureLogin();
+    const response = await this.http.get(`/api.php/v1/executions/${executionID}/builds`);
+    return response.data.data || response.data.builds || [];
+  }
+  /**
+   * 获取版本详情
+   * @param buildID - 版本 ID
+   * @returns 版本详情
+   */
+  async getBuild(buildID) {
+    await this.ensureLogin();
+    try {
+      const response = await this.http.get(`/api.php/v1/builds/${buildID}`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 创建版本
+   * @param params - 创建版本参数
+   * @returns 新创建的版本
+   */
+  async createBuild(params) {
+    await this.ensureLogin();
+    const data = {
+      name: params.name,
+      execution: params.execution,
+      product: params.product,
+      builder: params.builder
+    };
+    if (params.branch !== void 0)
+      data.branch = params.branch;
+    if (params.date !== void 0)
+      data.date = params.date;
+    if (params.scmPath !== void 0)
+      data.scmPath = params.scmPath;
+    if (params.filePath !== void 0)
+      data.filePath = params.filePath;
+    if (params.desc !== void 0)
+      data.desc = params.desc;
+    const response = await this.http.post(`/api.php/v1/projects/${params.project}/builds`, data);
+    return response.data.data || response.data;
+  }
+  /**
+   * 更新版本
+   * @param params - 更新版本参数
+   * @returns 更新后的版本
+   */
+  async updateBuild(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.name !== void 0)
+      updateData.name = params.name;
+    if (params.scmPath !== void 0)
+      updateData.scmPath = params.scmPath;
+    if (params.filePath !== void 0)
+      updateData.filePath = params.filePath;
+    if (params.desc !== void 0)
+      updateData.desc = params.desc;
+    if (params.builder !== void 0)
+      updateData.builder = params.builder;
+    if (params.date !== void 0)
+      updateData.date = params.date;
+    try {
+      const response = await this.http.put(`/api.php/v1/builds/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  // ==================== 执行（迭代）相关方法 ====================
+  /**
+   * 获取执行详情
+   * @param executionID - 执行 ID
+   * @returns 执行详情
+   */
+  async getExecution(executionID) {
+    await this.ensureLogin();
+    try {
+      const response = await this.http.get(`/api.php/v1/executions/${executionID}`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 创建执行
+   * @param params - 创建执行参数
+   * @returns 新创建的执行
+   */
+  async createExecution(params) {
+    await this.ensureLogin();
+    const data = {
+      name: params.name,
+      code: params.code,
+      begin: params.begin,
+      end: params.end
+    };
+    if (params.days !== void 0)
+      data.days = params.days;
+    if (params.lifetime !== void 0)
+      data.lifetime = params.lifetime;
+    if (params.PO !== void 0)
+      data.PO = params.PO;
+    if (params.PM !== void 0)
+      data.PM = params.PM;
+    if (params.QD !== void 0)
+      data.QD = params.QD;
+    if (params.RD !== void 0)
+      data.RD = params.RD;
+    if (params.teamMembers !== void 0)
+      data.teamMembers = params.teamMembers;
+    if (params.desc !== void 0)
+      data.desc = params.desc;
+    if (params.acl !== void 0)
+      data.acl = params.acl;
+    if (params.whitelist !== void 0)
+      data.whitelist = params.whitelist;
+    const response = await this.http.post(`/api.php/v1/projects/${params.project}/executions`, data);
+    return response.data.data || response.data;
+  }
+  /**
+   * 更新执行
+   * @param params - 更新执行参数
+   * @returns 更新后的执行
+   */
+  async updateExecution(params) {
+    await this.ensureLogin();
+    const updateData = {};
+    if (params.name !== void 0)
+      updateData.name = params.name;
+    if (params.code !== void 0)
+      updateData.code = params.code;
+    if (params.begin !== void 0)
+      updateData.begin = params.begin;
+    if (params.end !== void 0)
+      updateData.end = params.end;
+    if (params.days !== void 0)
+      updateData.days = params.days;
+    if (params.lifetime !== void 0)
+      updateData.lifetime = params.lifetime;
+    if (params.PO !== void 0)
+      updateData.PO = params.PO;
+    if (params.PM !== void 0)
+      updateData.PM = params.PM;
+    if (params.QD !== void 0)
+      updateData.QD = params.QD;
+    if (params.RD !== void 0)
+      updateData.RD = params.RD;
+    if (params.teamMembers !== void 0)
+      updateData.teamMembers = params.teamMembers;
+    if (params.desc !== void 0)
+      updateData.desc = params.desc;
+    if (params.acl !== void 0)
+      updateData.acl = params.acl;
+    if (params.whitelist !== void 0)
+      updateData.whitelist = params.whitelist;
+    try {
+      const response = await this.http.put(`/api.php/v1/executions/${params.id}`, updateData);
+      return response.data.data || response.data;
+    } catch {
+      return null;
+    }
+  }
+  // ==================== 测试单相关方法 ====================
+  /**
+   * 获取测试单列表
+   * @param productID - 产品 ID (可选)
+   * @param limit - 返回数量限制
+   * @returns 测试单列表
+   */
+  async getTestTasks(productID, limit = 100) {
+    await this.ensureLogin();
+    let url3 = `/api.php/v1/testtasks?limit=${limit}`;
+    if (productID !== void 0) {
+      url3 += `&product=${productID}`;
+    }
+    const response = await this.http.get(url3);
+    return response.data.data || response.data.testtasks || [];
+  }
+  /**
+   * 获取项目测试单列表
+   * @param projectID - 项目 ID
+   * @returns 测试单列表
+   */
+  async getProjectTestTasks(projectID) {
+    await this.ensureLogin();
+    const response = await this.http.get(`/api.php/v1/projects/${projectID}/testtasks`);
+    return response.data.data || response.data.testtasks || [];
+  }
+  /**
+   * 获取测试单详情
+   * @param testtaskID - 测试单 ID
+   * @returns 测试单详情
+   */
+  async getTestTask(testtaskID) {
+    await this.ensureLogin();
+    try {
+      const response = await this.http.get(`/api.php/v1/testtasks/${testtaskID}`);
+      return response.data.data || response.data;
+    } catch {
+      return null;
     }
   }
 };
@@ -43273,17 +44219,55 @@ var tools = [
           enum: [1, 2, 3, 4],
           description: "\u4F18\u5148\u7EA7: 1-\u7D27\u6025, 2-\u9AD8, 3-\u4E2D, 4-\u4F4E"
         },
-        steps: {
-          type: "string",
-          description: "\u91CD\u73B0\u6B65\u9AA4"
-        },
         type: {
           type: "string",
-          description: "Bug \u7C7B\u578B"
+          enum: ["codeerror", "config", "install", "security", "performance", "standard", "automation", "designdefect", "others"],
+          description: "Bug \u7C7B\u578B: codeerror-\u4EE3\u7801\u9519\u8BEF, config-\u914D\u7F6E\u76F8\u5173, install-\u5B89\u88C5\u90E8\u7F72, security-\u5B89\u5168\u76F8\u5173, performance-\u6027\u80FD\u95EE\u9898, standard-\u6807\u51C6\u89C4\u8303, automation-\u6D4B\u8BD5\u811A\u672C, designdefect-\u8BBE\u8BA1\u7F3A\u9677, others-\u5176\u4ED6"
+        },
+        branch: {
+          type: "number",
+          description: "\u6240\u5C5E\u5206\u652F ID"
         },
         module: {
           type: "number",
           description: "\u6A21\u5757 ID"
+        },
+        execution: {
+          type: "number",
+          description: "\u6240\u5C5E\u6267\u884C ID"
+        },
+        keywords: {
+          type: "string",
+          description: "\u5173\u952E\u8BCD"
+        },
+        os: {
+          type: "string",
+          description: "\u64CD\u4F5C\u7CFB\u7EDF"
+        },
+        browser: {
+          type: "string",
+          description: "\u6D4F\u89C8\u5668"
+        },
+        steps: {
+          type: "string",
+          description: "\u91CD\u73B0\u6B65\u9AA4 (\u652F\u6301 HTML \u683C\u5F0F\uFF0C\u53EF\u5185\u5D4C\u56FE\u7247)"
+        },
+        task: {
+          type: "number",
+          description: "\u76F8\u5173\u4EFB\u52A1 ID"
+        },
+        story: {
+          type: "number",
+          description: "\u76F8\u5173\u9700\u6C42 ID"
+        },
+        deadline: {
+          type: "string",
+          description: "\u622A\u6B62\u65E5\u671F\uFF0C\u683C\u5F0F YYYY-MM-DD"
+        },
+        openedBuild: {
+          type: "array",
+          items: { type: "string" },
+          description: '\u5F71\u54CD\u7248\u672C\uFF0C\u5982 ["trunk"]'
         },
         assignedTo: {
           type: "string",
@@ -43294,7 +44278,7 @@ var tools = [
           description: "\u9879\u76EE ID"
         }
       },
-      required: ["product", "title"]
+      required: ["product", "title", "severity", "pri", "type"]
     }
   },
   {
@@ -43452,6 +44436,16 @@ var tools = [
           type: "string",
           description: "\u9700\u6C42\u6807\u9898"
         },
+        category: {
+          type: "string",
+          enum: ["feature", "interface", "performance", "safe", "experience", "improve", "other"],
+          description: "\u9700\u6C42\u7C7B\u578B: feature-\u529F\u80FD, interface-\u63A5\u53E3, performance-\u6027\u80FD, safe-\u5B89\u5168, experience-\u4F53\u9A8C, improve-\u6539\u8FDB, other-\u5176\u4ED6"
+        },
+        pri: {
+          type: "number",
+          enum: [1, 2, 3, 4],
+          description: "\u4F18\u5148\u7EA7: 1-\u7D27\u6025, 2-\u9AD8, 3-\u4E2D, 4-\u4F4E"
+        },
         spec: {
           type: "string",
           description: "\u9700\u6C42\u63CF\u8FF0"
@@ -43459,11 +44453,6 @@ var tools = [
         verify: {
           type: "string",
           description: "\u9A8C\u6536\u6807\u51C6"
-        },
-        pri: {
-          type: "number",
-          enum: [1, 2, 3, 4],
-          description: "\u4F18\u5148\u7EA7: 1-\u7D27\u6025, 2-\u9AD8, 3-\u4E2D, 4-\u4F4E"
         },
         estimate: {
           type: "number",
@@ -43479,14 +44468,18 @@ var tools = [
         },
         source: {
           type: "string",
-          description: "\u6765\u6E90"
+          description: "\u6765\u6E90: customer-\u5BA2\u6237, user-\u7528\u6237, po-\u4EA7\u54C1\u7ECF\u7406, market-\u5E02\u573A"
         },
         sourceNote: {
           type: "string",
           description: "\u6765\u6E90\u5907\u6CE8"
+        },
+        keywords: {
+          type: "string",
+          description: "\u5173\u952E\u8BCD"
         }
       },
-      required: ["product", "title"]
+      required: ["product", "title", "category", "pri"]
     }
   },
   {
@@ -43748,18 +44741,614 @@ var tools = [
       required: ["id"]
     }
   },
+  // Bug 更新相关工具
   {
-    name: "zentao_delete_testcase",
-    description: "\u5220\u9664\u6D4B\u8BD5\u7528\u4F8B",
+    name: "zentao_update_bug",
+    description: "\u66F4\u65B0 Bug \u4FE1\u606F",
     inputSchema: {
       type: "object",
       properties: {
-        caseID: {
-          type: "number",
-          description: "\u7528\u4F8B ID"
-        }
+        id: { type: "number", description: "Bug ID" },
+        title: { type: "string", description: "Bug \u6807\u9898" },
+        severity: { type: "number", enum: [1, 2, 3, 4], description: "\u4E25\u91CD\u7A0B\u5EA6" },
+        pri: { type: "number", enum: [1, 2, 3, 4], description: "\u4F18\u5148\u7EA7" },
+        type: { type: "string", description: "Bug \u7C7B\u578B" },
+        steps: { type: "string", description: "\u91CD\u73B0\u6B65\u9AA4" },
+        module: { type: "number", description: "\u6A21\u5757 ID" },
+        deadline: { type: "string", description: "\u622A\u6B62\u65E5\u671F YYYY-MM-DD" }
       },
-      required: ["caseID"]
+      required: ["id"]
+    }
+  },
+  // 需求更新/变更相关工具
+  {
+    name: "zentao_update_story",
+    description: "\u66F4\u65B0\u9700\u6C42\u4FE1\u606F\uFF08\u4E0D\u542B\u6807\u9898\u548C\u63CF\u8FF0\uFF09",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u9700\u6C42 ID" },
+        module: { type: "number", description: "\u6A21\u5757 ID" },
+        source: { type: "string", description: "\u6765\u6E90" },
+        sourceNote: { type: "string", description: "\u6765\u6E90\u5907\u6CE8" },
+        pri: { type: "number", enum: [1, 2, 3, 4], description: "\u4F18\u5148\u7EA7" },
+        category: { type: "string", description: "\u9700\u6C42\u7C7B\u578B" },
+        estimate: { type: "number", description: "\u9884\u8BA1\u5DE5\u65F6" },
+        keywords: { type: "string", description: "\u5173\u952E\u8BCD" }
+      },
+      required: ["id"]
+    }
+  },
+  {
+    name: "zentao_change_story",
+    description: "\u53D8\u66F4\u9700\u6C42\uFF08\u4FEE\u6539\u6807\u9898\u3001\u63CF\u8FF0\u3001\u9A8C\u6536\u6807\u51C6\uFF0C\u4F1A\u5BFC\u81F4\u72B6\u6001\u53D8\u4E3A changed\uFF09",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u9700\u6C42 ID" },
+        title: { type: "string", description: "\u6807\u9898" },
+        spec: { type: "string", description: "\u63CF\u8FF0" },
+        verify: { type: "string", description: "\u9A8C\u6536\u6807\u51C6" }
+      },
+      required: ["id"]
+    }
+  },
+  // 产品详情/创建/更新相关工具
+  {
+    name: "zentao_get_product",
+    description: "\u83B7\u53D6\u4EA7\u54C1\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        productID: { type: "number", description: "\u4EA7\u54C1 ID" }
+      },
+      required: ["productID"]
+    }
+  },
+  {
+    name: "zentao_create_product",
+    description: "\u521B\u5EFA\u4EA7\u54C1",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "\u4EA7\u54C1\u540D\u79F0" },
+        code: { type: "string", description: "\u4EA7\u54C1\u4EE3\u53F7" },
+        program: { type: "number", description: "\u6240\u5C5E\u9879\u76EE\u96C6 ID" },
+        PO: { type: "string", description: "\u4EA7\u54C1\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        QD: { type: "string", description: "\u6D4B\u8BD5\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        RD: { type: "string", description: "\u53D1\u5E03\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        type: { type: "string", enum: ["normal", "branch", "platform"], description: "\u4EA7\u54C1\u7C7B\u578B" },
+        desc: { type: "string", description: "\u4EA7\u54C1\u63CF\u8FF0" },
+        acl: { type: "string", enum: ["open", "private"], description: "\u8BBF\u95EE\u63A7\u5236" }
+      },
+      required: ["name", "code"]
+    }
+  },
+  {
+    name: "zentao_update_product",
+    description: "\u66F4\u65B0\u4EA7\u54C1\u4FE1\u606F",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u4EA7\u54C1 ID" },
+        name: { type: "string", description: "\u4EA7\u54C1\u540D\u79F0" },
+        code: { type: "string", description: "\u4EA7\u54C1\u4EE3\u53F7" },
+        desc: { type: "string", description: "\u4EA7\u54C1\u63CF\u8FF0" },
+        PO: { type: "string", description: "\u4EA7\u54C1\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        QD: { type: "string", description: "\u6D4B\u8BD5\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        RD: { type: "string", description: "\u53D1\u5E03\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        status: { type: "string", description: "\u4EA7\u54C1\u72B6\u6001" }
+      },
+      required: ["id"]
+    }
+  },
+  // 项目详情/创建/更新相关工具
+  {
+    name: "zentao_get_project",
+    description: "\u83B7\u53D6\u9879\u76EE\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectID: { type: "number", description: "\u9879\u76EE ID" }
+      },
+      required: ["projectID"]
+    }
+  },
+  {
+    name: "zentao_create_project",
+    description: "\u521B\u5EFA\u9879\u76EE",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "\u9879\u76EE\u540D\u79F0" },
+        code: { type: "string", description: "\u9879\u76EE\u4EE3\u53F7" },
+        begin: { type: "string", description: "\u5F00\u59CB\u65E5\u671F YYYY-MM-DD" },
+        end: { type: "string", description: "\u7ED3\u675F\u65E5\u671F YYYY-MM-DD" },
+        products: { type: "array", items: { type: "number" }, description: "\u5173\u8054\u4EA7\u54C1 ID \u5217\u8868" },
+        model: { type: "string", enum: ["scrum", "waterfall"], description: "\u9879\u76EE\u6A21\u578B" },
+        parent: { type: "number", description: "\u6240\u5C5E\u9879\u76EE\u96C6 ID" }
+      },
+      required: ["name", "code", "begin", "end", "products"]
+    }
+  },
+  {
+    name: "zentao_update_project",
+    description: "\u66F4\u65B0\u9879\u76EE\u4FE1\u606F",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u9879\u76EE ID" },
+        name: { type: "string", description: "\u9879\u76EE\u540D\u79F0" },
+        code: { type: "string", description: "\u9879\u76EE\u4EE3\u53F7" },
+        PM: { type: "string", description: "\u9879\u76EE\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        desc: { type: "string", description: "\u9879\u76EE\u63CF\u8FF0" },
+        days: { type: "number", description: "\u53EF\u7528\u5DE5\u4F5C\u65E5" }
+      },
+      required: ["id"]
+    }
+  },
+  // 任务相关工具
+  {
+    name: "zentao_get_tasks",
+    description: "\u83B7\u53D6\u6267\u884C\uFF08\u8FED\u4EE3\uFF09\u7684\u4EFB\u52A1\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        executionID: { type: "number", description: "\u6267\u884C ID" },
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
+      },
+      required: ["executionID"]
+    }
+  },
+  {
+    name: "zentao_get_task",
+    description: "\u83B7\u53D6\u4EFB\u52A1\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        taskID: { type: "number", description: "\u4EFB\u52A1 ID" }
+      },
+      required: ["taskID"]
+    }
+  },
+  {
+    name: "zentao_create_task",
+    description: "\u521B\u5EFA\u4EFB\u52A1",
+    inputSchema: {
+      type: "object",
+      properties: {
+        execution: { type: "number", description: "\u6267\u884C ID" },
+        name: { type: "string", description: "\u4EFB\u52A1\u540D\u79F0" },
+        type: { type: "string", enum: ["design", "devel", "request", "test", "study", "discuss", "ui", "affair", "misc"], description: "\u4EFB\u52A1\u7C7B\u578B" },
+        assignedTo: { type: "array", items: { type: "string" }, description: "\u6307\u6D3E\u7ED9\uFF08\u7528\u6237\u8D26\u53F7\u5217\u8868\uFF09" },
+        estStarted: { type: "string", description: "\u9884\u8BA1\u5F00\u59CB\u65E5\u671F YYYY-MM-DD" },
+        deadline: { type: "string", description: "\u622A\u6B62\u65E5\u671F YYYY-MM-DD" },
+        story: { type: "number", description: "\u5173\u8054\u9700\u6C42 ID" },
+        pri: { type: "number", description: "\u4F18\u5148\u7EA7" },
+        estimate: { type: "number", description: "\u9884\u8BA1\u5DE5\u65F6" },
+        desc: { type: "string", description: "\u4EFB\u52A1\u63CF\u8FF0" }
+      },
+      required: ["execution", "name", "type", "assignedTo", "estStarted", "deadline"]
+    }
+  },
+  {
+    name: "zentao_update_task",
+    description: "\u66F4\u65B0\u4EFB\u52A1\u4FE1\u606F",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u4EFB\u52A1 ID" },
+        name: { type: "string", description: "\u4EFB\u52A1\u540D\u79F0" },
+        type: { type: "string", enum: ["design", "devel", "request", "test", "study", "discuss", "ui", "affair", "misc"], description: "\u4EFB\u52A1\u7C7B\u578B" },
+        assignedTo: { type: "array", items: { type: "string" }, description: "\u6307\u6D3E\u7ED9" },
+        pri: { type: "number", description: "\u4F18\u5148\u7EA7" },
+        estimate: { type: "number", description: "\u9884\u8BA1\u5DE5\u65F6" },
+        deadline: { type: "string", description: "\u622A\u6B62\u65E5\u671F" },
+        desc: { type: "string", description: "\u4EFB\u52A1\u63CF\u8FF0" }
+      },
+      required: ["id"]
+    }
+  },
+  // 用户相关工具
+  {
+    name: "zentao_get_users",
+    description: "\u83B7\u53D6\u7528\u6237\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
+      },
+      required: []
+    }
+  },
+  {
+    name: "zentao_get_user",
+    description: "\u83B7\u53D6\u7528\u6237\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        userID: { type: "number", description: "\u7528\u6237 ID" }
+      },
+      required: ["userID"]
+    }
+  },
+  {
+    name: "zentao_get_my_profile",
+    description: "\u83B7\u53D6\u5F53\u524D\u767B\u5F55\u7528\u6237\u4FE1\u606F",
+    inputSchema: {
+      type: "object",
+      properties: {},
+      required: []
+    }
+  },
+  {
+    name: "zentao_create_user",
+    description: "\u521B\u5EFA\u7528\u6237",
+    inputSchema: {
+      type: "object",
+      properties: {
+        account: { type: "string", description: "\u7528\u6237\u8D26\u53F7" },
+        password: { type: "string", description: "\u5BC6\u7801" },
+        realname: { type: "string", description: "\u771F\u5B9E\u59D3\u540D" },
+        gender: { type: "string", enum: ["m", "f"], description: "\u6027\u522B" },
+        role: { type: "string", description: "\u89D2\u8272" },
+        dept: { type: "number", description: "\u90E8\u95E8 ID" },
+        email: { type: "string", description: "\u90AE\u7BB1" },
+        mobile: { type: "string", description: "\u624B\u673A\u53F7" }
+      },
+      required: ["account", "password"]
+    }
+  },
+  {
+    name: "zentao_update_user",
+    description: "\u66F4\u65B0\u7528\u6237\u4FE1\u606F",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u7528\u6237 ID" },
+        realname: { type: "string", description: "\u771F\u5B9E\u59D3\u540D" },
+        role: { type: "string", description: "\u89D2\u8272" },
+        dept: { type: "number", description: "\u90E8\u95E8 ID" },
+        email: { type: "string", description: "\u90AE\u7BB1" },
+        mobile: { type: "string", description: "\u624B\u673A\u53F7" }
+      },
+      required: ["id"]
+    }
+  },
+  // 项目集相关工具
+  {
+    name: "zentao_get_programs",
+    description: "\u83B7\u53D6\u9879\u76EE\u96C6\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
+      },
+      required: []
+    }
+  },
+  {
+    name: "zentao_get_program",
+    description: "\u83B7\u53D6\u9879\u76EE\u96C6\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        programID: { type: "number", description: "\u9879\u76EE\u96C6 ID" }
+      },
+      required: ["programID"]
+    }
+  },
+  {
+    name: "zentao_create_program",
+    description: "\u521B\u5EFA\u9879\u76EE\u96C6",
+    inputSchema: {
+      type: "object",
+      properties: {
+        name: { type: "string", description: "\u9879\u76EE\u96C6\u540D\u79F0" },
+        begin: { type: "string", description: "\u5F00\u59CB\u65E5\u671F YYYY-MM-DD" },
+        end: { type: "string", description: "\u7ED3\u675F\u65E5\u671F YYYY-MM-DD" },
+        parent: { type: "number", description: "\u7236\u9879\u76EE\u96C6 ID" },
+        PM: { type: "string", description: "\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        budget: { type: "number", description: "\u9884\u7B97" },
+        desc: { type: "string", description: "\u63CF\u8FF0" }
+      },
+      required: ["name", "begin", "end"]
+    }
+  },
+  {
+    name: "zentao_update_program",
+    description: "\u66F4\u65B0\u9879\u76EE\u96C6\u4FE1\u606F",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u9879\u76EE\u96C6 ID" },
+        name: { type: "string", description: "\u9879\u76EE\u96C6\u540D\u79F0" },
+        PM: { type: "string", description: "\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        budget: { type: "number", description: "\u9884\u7B97" },
+        desc: { type: "string", description: "\u63CF\u8FF0" },
+        begin: { type: "string", description: "\u5F00\u59CB\u65E5\u671F" },
+        end: { type: "string", description: "\u7ED3\u675F\u65E5\u671F" }
+      },
+      required: ["id"]
+    }
+  },
+  // 计划相关工具
+  {
+    name: "zentao_get_plans",
+    description: "\u83B7\u53D6\u4EA7\u54C1\u8BA1\u5212\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        productID: { type: "number", description: "\u4EA7\u54C1 ID" },
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
+      },
+      required: ["productID"]
+    }
+  },
+  {
+    name: "zentao_get_plan",
+    description: "\u83B7\u53D6\u8BA1\u5212\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        planID: { type: "number", description: "\u8BA1\u5212 ID" }
+      },
+      required: ["planID"]
+    }
+  },
+  {
+    name: "zentao_create_plan",
+    description: "\u521B\u5EFA\u8BA1\u5212",
+    inputSchema: {
+      type: "object",
+      properties: {
+        product: { type: "number", description: "\u4EA7\u54C1 ID" },
+        title: { type: "string", description: "\u8BA1\u5212\u540D\u79F0" },
+        begin: { type: "string", description: "\u5F00\u59CB\u65E5\u671F YYYY-MM-DD" },
+        end: { type: "string", description: "\u7ED3\u675F\u65E5\u671F YYYY-MM-DD" },
+        desc: { type: "string", description: "\u63CF\u8FF0" }
+      },
+      required: ["product", "title"]
+    }
+  },
+  {
+    name: "zentao_update_plan",
+    description: "\u66F4\u65B0\u8BA1\u5212\u4FE1\u606F",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u8BA1\u5212 ID" },
+        title: { type: "string", description: "\u8BA1\u5212\u540D\u79F0" },
+        begin: { type: "string", description: "\u5F00\u59CB\u65E5\u671F" },
+        end: { type: "string", description: "\u7ED3\u675F\u65E5\u671F" },
+        desc: { type: "string", description: "\u63CF\u8FF0" }
+      },
+      required: ["id"]
+    }
+  },
+  {
+    name: "zentao_link_stories_to_plan",
+    description: "\u8BA1\u5212\u5173\u8054\u9700\u6C42",
+    inputSchema: {
+      type: "object",
+      properties: {
+        planID: { type: "number", description: "\u8BA1\u5212 ID" },
+        stories: { type: "array", items: { type: "number" }, description: "\u9700\u6C42 ID \u5217\u8868" }
+      },
+      required: ["planID", "stories"]
+    }
+  },
+  {
+    name: "zentao_unlink_stories_from_plan",
+    description: "\u8BA1\u5212\u53D6\u6D88\u5173\u8054\u9700\u6C42",
+    inputSchema: {
+      type: "object",
+      properties: {
+        planID: { type: "number", description: "\u8BA1\u5212 ID" },
+        stories: { type: "array", items: { type: "number" }, description: "\u9700\u6C42 ID \u5217\u8868" }
+      },
+      required: ["planID", "stories"]
+    }
+  },
+  {
+    name: "zentao_link_bugs_to_plan",
+    description: "\u8BA1\u5212\u5173\u8054 Bug",
+    inputSchema: {
+      type: "object",
+      properties: {
+        planID: { type: "number", description: "\u8BA1\u5212 ID" },
+        bugs: { type: "array", items: { type: "number" }, description: "Bug ID \u5217\u8868" }
+      },
+      required: ["planID", "bugs"]
+    }
+  },
+  {
+    name: "zentao_unlink_bugs_from_plan",
+    description: "\u8BA1\u5212\u53D6\u6D88\u5173\u8054 Bug",
+    inputSchema: {
+      type: "object",
+      properties: {
+        planID: { type: "number", description: "\u8BA1\u5212 ID" },
+        bugs: { type: "array", items: { type: "number" }, description: "Bug ID \u5217\u8868" }
+      },
+      required: ["planID", "bugs"]
+    }
+  },
+  // 发布相关工具
+  {
+    name: "zentao_get_project_releases",
+    description: "\u83B7\u53D6\u9879\u76EE\u53D1\u5E03\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectID: { type: "number", description: "\u9879\u76EE ID" }
+      },
+      required: ["projectID"]
+    }
+  },
+  {
+    name: "zentao_get_product_releases",
+    description: "\u83B7\u53D6\u4EA7\u54C1\u53D1\u5E03\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        productID: { type: "number", description: "\u4EA7\u54C1 ID" }
+      },
+      required: ["productID"]
+    }
+  },
+  // 版本相关工具
+  {
+    name: "zentao_get_project_builds",
+    description: "\u83B7\u53D6\u9879\u76EE\u7248\u672C\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectID: { type: "number", description: "\u9879\u76EE ID" }
+      },
+      required: ["projectID"]
+    }
+  },
+  {
+    name: "zentao_get_execution_builds",
+    description: "\u83B7\u53D6\u6267\u884C\u7248\u672C\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        executionID: { type: "number", description: "\u6267\u884C ID" }
+      },
+      required: ["executionID"]
+    }
+  },
+  {
+    name: "zentao_get_build",
+    description: "\u83B7\u53D6\u7248\u672C\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        buildID: { type: "number", description: "\u7248\u672C ID" }
+      },
+      required: ["buildID"]
+    }
+  },
+  {
+    name: "zentao_create_build",
+    description: "\u521B\u5EFA\u7248\u672C",
+    inputSchema: {
+      type: "object",
+      properties: {
+        project: { type: "number", description: "\u9879\u76EE ID" },
+        name: { type: "string", description: "\u7248\u672C\u540D\u79F0" },
+        execution: { type: "number", description: "\u6267\u884C ID" },
+        product: { type: "number", description: "\u4EA7\u54C1 ID" },
+        builder: { type: "string", description: "\u6784\u5EFA\u8005\u8D26\u53F7" },
+        date: { type: "string", description: "\u6253\u5305\u65E5\u671F YYYY-MM-DD" },
+        scmPath: { type: "string", description: "\u6E90\u4EE3\u7801\u5730\u5740" },
+        filePath: { type: "string", description: "\u4E0B\u8F7D\u5730\u5740" },
+        desc: { type: "string", description: "\u63CF\u8FF0" }
+      },
+      required: ["project", "name", "execution", "product", "builder"]
+    }
+  },
+  {
+    name: "zentao_update_build",
+    description: "\u66F4\u65B0\u7248\u672C\u4FE1\u606F",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u7248\u672C ID" },
+        name: { type: "string", description: "\u7248\u672C\u540D\u79F0" },
+        scmPath: { type: "string", description: "\u6E90\u4EE3\u7801\u5730\u5740" },
+        filePath: { type: "string", description: "\u4E0B\u8F7D\u5730\u5740" },
+        desc: { type: "string", description: "\u63CF\u8FF0" },
+        builder: { type: "string", description: "\u6784\u5EFA\u8005" },
+        date: { type: "string", description: "\u6253\u5305\u65E5\u671F" }
+      },
+      required: ["id"]
+    }
+  },
+  // 执行（迭代）相关工具
+  {
+    name: "zentao_get_execution",
+    description: "\u83B7\u53D6\u6267\u884C\uFF08\u8FED\u4EE3\uFF09\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        executionID: { type: "number", description: "\u6267\u884C ID" }
+      },
+      required: ["executionID"]
+    }
+  },
+  {
+    name: "zentao_create_execution",
+    description: "\u521B\u5EFA\u6267\u884C\uFF08\u8FED\u4EE3\uFF09",
+    inputSchema: {
+      type: "object",
+      properties: {
+        project: { type: "number", description: "\u9879\u76EE ID" },
+        name: { type: "string", description: "\u6267\u884C\u540D\u79F0" },
+        code: { type: "string", description: "\u6267\u884C\u4EE3\u53F7" },
+        begin: { type: "string", description: "\u5F00\u59CB\u65E5\u671F YYYY-MM-DD" },
+        end: { type: "string", description: "\u7ED3\u675F\u65E5\u671F YYYY-MM-DD" },
+        days: { type: "number", description: "\u53EF\u7528\u5DE5\u4F5C\u65E5" },
+        PM: { type: "string", description: "\u8FED\u4EE3\u8D1F\u8D23\u4EBA\u8D26\u53F7" },
+        teamMembers: { type: "array", items: { type: "string" }, description: "\u56E2\u961F\u6210\u5458\u8D26\u53F7\u5217\u8868" },
+        desc: { type: "string", description: "\u63CF\u8FF0" }
+      },
+      required: ["project", "name", "code", "begin", "end"]
+    }
+  },
+  {
+    name: "zentao_update_execution",
+    description: "\u66F4\u65B0\u6267\u884C\uFF08\u8FED\u4EE3\uFF09\u4FE1\u606F",
+    inputSchema: {
+      type: "object",
+      properties: {
+        id: { type: "number", description: "\u6267\u884C ID" },
+        name: { type: "string", description: "\u6267\u884C\u540D\u79F0" },
+        code: { type: "string", description: "\u6267\u884C\u4EE3\u53F7" },
+        begin: { type: "string", description: "\u5F00\u59CB\u65E5\u671F" },
+        end: { type: "string", description: "\u7ED3\u675F\u65E5\u671F" },
+        days: { type: "number", description: "\u53EF\u7528\u5DE5\u4F5C\u65E5" },
+        PM: { type: "string", description: "\u8FED\u4EE3\u8D1F\u8D23\u4EBA" },
+        desc: { type: "string", description: "\u63CF\u8FF0" }
+      },
+      required: ["id"]
+    }
+  },
+  // 测试单相关工具
+  {
+    name: "zentao_get_testtasks",
+    description: "\u83B7\u53D6\u6D4B\u8BD5\u5355\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08\u53EF\u9009\uFF09" },
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
+      },
+      required: []
+    }
+  },
+  {
+    name: "zentao_get_project_testtasks",
+    description: "\u83B7\u53D6\u9879\u76EE\u6D4B\u8BD5\u5355\u5217\u8868",
+    inputSchema: {
+      type: "object",
+      properties: {
+        projectID: { type: "number", description: "\u9879\u76EE ID" }
+      },
+      required: ["projectID"]
+    }
+  },
+  {
+    name: "zentao_get_testtask",
+    description: "\u83B7\u53D6\u6D4B\u8BD5\u5355\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        testtaskID: { type: "number", description: "\u6D4B\u8BD5\u5355 ID" }
+      },
+      required: ["testtaskID"]
     }
   }
 ];
@@ -43807,15 +45396,24 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
       case "zentao_create_bug": {
-        const { product, title, severity, pri, steps, type, module: module2, assignedTo, project } = args;
+        const { product, title, severity, pri, type, branch, module: module2, execution, keywords, os, browser, steps, task, story, deadline, openedBuild, assignedTo, project } = args;
         result = await zentaoClient.createBug({
           product,
           title,
           severity,
           pri,
-          steps,
           type,
+          branch,
           module: module2,
+          execution,
+          keywords,
+          os,
+          browser,
+          steps,
+          task,
+          story,
+          deadline,
+          openedBuild,
           assignedTo,
           project
         });
@@ -43880,18 +45478,20 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
       case "zentao_create_story": {
-        const { product, title, spec, verify, pri, estimate, module: module2, plan, source, sourceNote } = args;
+        const { product, title, category, pri, spec, verify, estimate, module: module2, plan, source, sourceNote, keywords } = args;
         result = await zentaoClient.createStory({
           product,
           title,
+          category,
+          pri,
           spec,
           verify,
-          pri,
           estimate,
           module: module2,
           plan,
           source,
-          sourceNote
+          sourceNote,
+          keywords
         });
         break;
       }
@@ -43978,13 +45578,372 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         });
         break;
       }
-      case "zentao_delete_testcase": {
-        const { caseID } = args;
-        const success2 = await zentaoClient.deleteTestCase(caseID);
+      // Bug 更新相关
+      case "zentao_update_bug": {
+        const { id, title, severity, pri, type, steps, module: module2, deadline } = args;
+        result = await zentaoClient.updateBug({ id, title, severity, pri, type, steps, module: module2, deadline });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `Bug #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      // 需求更新/变更相关
+      case "zentao_update_story": {
+        const { id, module: module2, source, sourceNote, pri, category, estimate, keywords } = args;
+        result = await zentaoClient.updateStory({ id, module: module2, source, sourceNote, pri, category, estimate, keywords });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u9700\u6C42 #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_change_story": {
+        const { id, title, spec, verify } = args;
+        result = await zentaoClient.changeStory({ id, title, spec, verify });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u9700\u6C42 #${id} \u53D8\u66F4\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      // 产品详情/创建/更新相关
+      case "zentao_get_product": {
+        const { productID } = args;
+        result = await zentaoClient.getProduct(productID);
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u4EA7\u54C1 #${productID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_create_product": {
+        const { name: name2, code, program, PO, QD, RD, type, desc, acl } = args;
+        result = await zentaoClient.createProduct({ name: name2, code, program, PO, QD, RD, type, desc, acl });
+        break;
+      }
+      case "zentao_update_product": {
+        const { id, name: name2, code, desc, PO, QD, RD, status } = args;
+        result = await zentaoClient.updateProduct({ id, name: name2, code, desc, PO, QD, RD, status });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u4EA7\u54C1 #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      // 项目详情/创建/更新相关
+      case "zentao_get_project": {
+        const { projectID } = args;
+        result = await zentaoClient.getProject(projectID);
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u9879\u76EE #${projectID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_create_project": {
+        const { name: name2, code, begin, end, products, model, parent } = args;
+        result = await zentaoClient.createProject({ name: name2, code, begin, end, products, model, parent });
+        break;
+      }
+      case "zentao_update_project": {
+        const { id, name: name2, code, PM, desc, days } = args;
+        result = await zentaoClient.updateProject({ id, name: name2, code, PM, desc, days });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u9879\u76EE #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      // 任务相关
+      case "zentao_get_tasks": {
+        const { executionID, limit } = args;
+        result = await zentaoClient.getTasks(executionID, limit);
+        break;
+      }
+      case "zentao_get_task": {
+        const { taskID } = args;
+        result = await zentaoClient.getTask(taskID);
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u4EFB\u52A1 #${taskID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_create_task": {
+        const { execution, name: name2, type, assignedTo, estStarted, deadline, story, pri, estimate, desc } = args;
+        result = await zentaoClient.createTask({ execution, name: name2, type, assignedTo, estStarted, deadline, story, pri, estimate, desc });
+        break;
+      }
+      case "zentao_update_task": {
+        const { id, name: name2, type, assignedTo, pri, estimate, deadline, desc } = args;
+        result = await zentaoClient.updateTask({ id, name: name2, type, assignedTo, pri, estimate, deadline, desc });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u4EFB\u52A1 #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      // 用户相关
+      case "zentao_get_users": {
+        const { limit } = args || {};
+        result = await zentaoClient.getUsers(limit);
+        break;
+      }
+      case "zentao_get_user": {
+        const { userID } = args;
+        result = await zentaoClient.getUser(userID);
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u7528\u6237 #${userID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_get_my_profile": {
+        result = await zentaoClient.getMyProfile();
+        if (!result) {
+          return {
+            content: [{ type: "text", text: "\u83B7\u53D6\u5F53\u524D\u7528\u6237\u4FE1\u606F\u5931\u8D25" }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_create_user": {
+        const { account, password, realname, gender, role, dept, email: email3, mobile } = args;
+        result = await zentaoClient.createUser({ account, password, realname, gender, role, dept, email: email3, mobile });
+        break;
+      }
+      case "zentao_update_user": {
+        const { id, realname, role, dept, email: email3, mobile } = args;
+        result = await zentaoClient.updateUser({ id, realname, role, dept, email: email3, mobile });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u7528\u6237 #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      // 项目集相关
+      case "zentao_get_programs": {
+        const { limit } = args || {};
+        result = await zentaoClient.getPrograms(limit);
+        break;
+      }
+      case "zentao_get_program": {
+        const { programID } = args;
+        result = await zentaoClient.getProgram(programID);
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u9879\u76EE\u96C6 #${programID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_create_program": {
+        const { name: name2, begin, end, parent, PM, budget, desc } = args;
+        result = await zentaoClient.createProgram({ name: name2, begin, end, parent, PM, budget, desc });
+        break;
+      }
+      case "zentao_update_program": {
+        const { id, name: name2, PM, budget, desc, begin, end } = args;
+        result = await zentaoClient.updateProgram({ id, name: name2, PM, budget, desc, begin, end });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u9879\u76EE\u96C6 #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      // 计划相关
+      case "zentao_get_plans": {
+        const { productID, limit } = args;
+        result = await zentaoClient.getPlans(productID, limit);
+        break;
+      }
+      case "zentao_get_plan": {
+        const { planID } = args;
+        result = await zentaoClient.getPlan(planID);
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u8BA1\u5212 #${planID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_create_plan": {
+        const { product, title, begin, end, desc } = args;
+        result = await zentaoClient.createPlan({ product, title, begin, end, desc });
+        break;
+      }
+      case "zentao_update_plan": {
+        const { id, title, begin, end, desc } = args;
+        result = await zentaoClient.updatePlan({ id, title, begin, end, desc });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u8BA1\u5212 #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_link_stories_to_plan": {
+        const { planID, stories } = args;
+        const success2 = await zentaoClient.linkStoriesToPlan(planID, stories);
         result = {
           success: success2,
-          message: success2 ? `\u6D4B\u8BD5\u7528\u4F8B #${caseID} \u5DF2\u5220\u9664` : `\u6D4B\u8BD5\u7528\u4F8B #${caseID} \u5220\u9664\u5931\u8D25`
+          message: success2 ? `\u8BA1\u5212 #${planID} \u5DF2\u5173\u8054 ${stories.length} \u4E2A\u9700\u6C42` : "\u5173\u8054\u9700\u6C42\u5931\u8D25"
         };
+        break;
+      }
+      case "zentao_unlink_stories_from_plan": {
+        const { planID, stories } = args;
+        const success2 = await zentaoClient.unlinkStoriesFromPlan(planID, stories);
+        result = {
+          success: success2,
+          message: success2 ? `\u8BA1\u5212 #${planID} \u5DF2\u53D6\u6D88\u5173\u8054 ${stories.length} \u4E2A\u9700\u6C42` : "\u53D6\u6D88\u5173\u8054\u9700\u6C42\u5931\u8D25"
+        };
+        break;
+      }
+      case "zentao_link_bugs_to_plan": {
+        const { planID, bugs } = args;
+        const success2 = await zentaoClient.linkBugsToPlan(planID, bugs);
+        result = {
+          success: success2,
+          message: success2 ? `\u8BA1\u5212 #${planID} \u5DF2\u5173\u8054 ${bugs.length} \u4E2A Bug` : "\u5173\u8054 Bug \u5931\u8D25"
+        };
+        break;
+      }
+      case "zentao_unlink_bugs_from_plan": {
+        const { planID, bugs } = args;
+        const success2 = await zentaoClient.unlinkBugsFromPlan(planID, bugs);
+        result = {
+          success: success2,
+          message: success2 ? `\u8BA1\u5212 #${planID} \u5DF2\u53D6\u6D88\u5173\u8054 ${bugs.length} \u4E2A Bug` : "\u53D6\u6D88\u5173\u8054 Bug \u5931\u8D25"
+        };
+        break;
+      }
+      // 发布相关
+      case "zentao_get_project_releases": {
+        const { projectID } = args;
+        result = await zentaoClient.getProjectReleases(projectID);
+        break;
+      }
+      case "zentao_get_product_releases": {
+        const { productID } = args;
+        result = await zentaoClient.getProductReleases(productID);
+        break;
+      }
+      // 版本相关
+      case "zentao_get_project_builds": {
+        const { projectID } = args;
+        result = await zentaoClient.getProjectBuilds(projectID);
+        break;
+      }
+      case "zentao_get_execution_builds": {
+        const { executionID } = args;
+        result = await zentaoClient.getExecutionBuilds(executionID);
+        break;
+      }
+      case "zentao_get_build": {
+        const { buildID } = args;
+        result = await zentaoClient.getBuild(buildID);
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u7248\u672C #${buildID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_create_build": {
+        const { project, name: name2, execution, product, builder, date: date4, scmPath, filePath, desc } = args;
+        result = await zentaoClient.createBuild({ project, name: name2, execution, product, builder, date: date4, scmPath, filePath, desc });
+        break;
+      }
+      case "zentao_update_build": {
+        const { id, name: name2, scmPath, filePath, desc, builder, date: date4 } = args;
+        result = await zentaoClient.updateBuild({ id, name: name2, scmPath, filePath, desc, builder, date: date4 });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u7248\u672C #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      // 执行（迭代）相关
+      case "zentao_get_execution": {
+        const { executionID } = args;
+        result = await zentaoClient.getExecution(executionID);
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u6267\u884C #${executionID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      case "zentao_create_execution": {
+        const { project, name: name2, code, begin, end, days, PM, teamMembers, desc } = args;
+        result = await zentaoClient.createExecution({ project, name: name2, code, begin, end, days, PM, teamMembers, desc });
+        break;
+      }
+      case "zentao_update_execution": {
+        const { id, name: name2, code, begin, end, days, PM, desc } = args;
+        result = await zentaoClient.updateExecution({ id, name: name2, code, begin, end, days, PM, desc });
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u6267\u884C #${id} \u66F4\u65B0\u5931\u8D25` }],
+            isError: true
+          };
+        }
+        break;
+      }
+      // 测试单相关
+      case "zentao_get_testtasks": {
+        const { productID, limit } = args || {};
+        result = await zentaoClient.getTestTasks(productID, limit);
+        break;
+      }
+      case "zentao_get_project_testtasks": {
+        const { projectID } = args;
+        result = await zentaoClient.getProjectTestTasks(projectID);
+        break;
+      }
+      case "zentao_get_testtask": {
+        const { testtaskID } = args;
+        result = await zentaoClient.getTestTask(testtaskID);
+        if (!result) {
+          return {
+            content: [{ type: "text", text: `\u6D4B\u8BD5\u5355 #${testtaskID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }],
+            isError: true
+          };
+        }
         break;
       }
       default:
