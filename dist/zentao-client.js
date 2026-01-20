@@ -317,9 +317,9 @@ export class ZentaoClient {
             title: params.title,
             category: params.category,
             pri: params.pri,
+            spec: params.spec,
+            reviewer: params.reviewer,
         };
-        if (params.spec !== undefined)
-            data.spec = params.spec;
         if (params.verify !== undefined)
             data.verify = params.verify;
         if (params.estimate !== undefined)
@@ -334,8 +334,23 @@ export class ZentaoClient {
             data.sourceNote = params.sourceNote;
         if (params.keywords !== undefined)
             data.keywords = params.keywords;
-        const response = await this.http.post('/api.php/v1/stories', data);
-        return response.data.data || response.data;
+        try {
+            const response = await this.http.post(`/api.php/v1/products/${params.product}/stories`, data);
+            // 尝试多种响应格式
+            if (response.data.data) {
+                return response.data.data;
+            }
+            if (response.data && typeof response.data === 'object' && 'id' in response.data) {
+                return response.data;
+            }
+            // 返回完整响应作为调试信息
+            return response.data;
+        }
+        catch (error) {
+            const axiosError = error;
+            console.error('创建需求失败:', axiosError.response?.data || axiosError.message);
+            throw new Error(`创建需求失败: ${JSON.stringify(axiosError.response?.data || axiosError.message)}`);
+        }
     }
     /**
      * 关闭需求

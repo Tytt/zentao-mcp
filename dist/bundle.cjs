@@ -43003,10 +43003,10 @@ var ZentaoClient = class {
       product: params.product,
       title: params.title,
       category: params.category,
-      pri: params.pri
+      pri: params.pri,
+      spec: params.spec,
+      reviewer: params.reviewer
     };
-    if (params.spec !== void 0)
-      data.spec = params.spec;
     if (params.verify !== void 0)
       data.verify = params.verify;
     if (params.estimate !== void 0)
@@ -43021,8 +43021,20 @@ var ZentaoClient = class {
       data.sourceNote = params.sourceNote;
     if (params.keywords !== void 0)
       data.keywords = params.keywords;
-    const response = await this.http.post("/api.php/v1/stories", data);
-    return response.data.data || response.data;
+    try {
+      const response = await this.http.post(`/api.php/v1/products/${params.product}/stories`, data);
+      if (response.data.data) {
+        return response.data.data;
+      }
+      if (response.data && typeof response.data === "object" && "id" in response.data) {
+        return response.data;
+      }
+      return response.data;
+    } catch (error2) {
+      const axiosError = error2;
+      console.error("\u521B\u5EFA\u9700\u6C42\u5931\u8D25:", axiosError.response?.data || axiosError.message);
+      throw new Error(`\u521B\u5EFA\u9700\u6C42\u5931\u8D25: ${JSON.stringify(axiosError.response?.data || axiosError.message)}`);
+    }
   }
   /**
    * 关闭需求
@@ -44448,7 +44460,12 @@ var tools = [
         },
         spec: {
           type: "string",
-          description: "\u9700\u6C42\u63CF\u8FF0"
+          description: "\u9700\u6C42\u63CF\u8FF0\uFF08\u5FC5\u586B\uFF09"
+        },
+        reviewer: {
+          type: "array",
+          items: { type: "string" },
+          description: '\u8BC4\u5BA1\u4EBA\u8D26\u53F7\u5217\u8868\uFF08\u5FC5\u586B\uFF09\uFF0C\u5982 ["york", "admin"]'
         },
         verify: {
           type: "string",
@@ -44479,7 +44496,7 @@ var tools = [
           description: "\u5173\u952E\u8BCD"
         }
       },
-      required: ["product", "title", "category", "pri"]
+      required: ["product", "title", "category", "pri", "spec", "reviewer"]
     }
   },
   {
@@ -45478,13 +45495,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         break;
       }
       case "zentao_create_story": {
-        const { product, title, category, pri, spec, verify, estimate, module: module2, plan, source, sourceNote, keywords } = args;
+        const { product, title, category, pri, spec, reviewer, verify, estimate, module: module2, plan, source, sourceNote, keywords } = args;
         result = await zentaoClient.createStory({
           product,
           title,
           category,
           pri,
           spec,
+          reviewer,
           verify,
           estimate,
           module: module2,

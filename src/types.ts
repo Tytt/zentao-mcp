@@ -161,8 +161,10 @@ export interface CreateStoryParams {
   category: StoryCategory;
   /** 优先级 1-4（必填） */
   pri: number;
-  /** 需求描述 */
-  spec?: string;
+  /** 需求描述（必填） */
+  spec: string;
+  /** 评审人账号列表（必填） */
+  reviewer: string[];
   /** 验收标准 */
   verify?: string;
   /** 预估工时 */

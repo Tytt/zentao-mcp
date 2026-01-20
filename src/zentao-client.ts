@@ -394,11 +394,12 @@ export class ZentaoClient {
 
     const data: Record<string, unknown> = {
       product: params.product,
-        title: params.title,
+      title: params.title,
       category: params.category,
       pri: params.pri,
+      spec: params.spec,
+      reviewer: params.reviewer,
     };
-    if (params.spec !== undefined) data.spec = params.spec;
     if (params.verify !== undefined) data.verify = params.verify;
     if (params.estimate !== undefined) data.estimate = params.estimate;
     if (params.module !== undefined) data.module = params.module;
@@ -407,12 +408,26 @@ export class ZentaoClient {
     if (params.sourceNote !== undefined) data.sourceNote = params.sourceNote;
     if (params.keywords !== undefined) data.keywords = params.keywords;
 
-    const response: AxiosResponse<ApiResponse<Story>> = await this.http.post(
-      '/api.php/v1/stories',
-      data
-    );
-
-    return response.data.data || (response.data as unknown as Story);
+    try {
+      const response: AxiosResponse<ApiResponse<Story>> = await this.http.post(
+        `/api.php/v1/products/${params.product}/stories`,
+        data
+      );
+      
+      // 尝试多种响应格式
+      if (response.data.data) {
+        return response.data.data;
+      }
+      if (response.data && typeof response.data === 'object' && 'id' in response.data) {
+        return response.data as unknown as Story;
+      }
+      // 返回完整响应作为调试信息
+      return response.data as unknown as Story;
+    } catch (error: unknown) {
+      const axiosError = error as { response?: { data?: unknown }; message?: string };
+      console.error('创建需求失败:', axiosError.response?.data || axiosError.message);
+      throw new Error(`创建需求失败: ${JSON.stringify(axiosError.response?.data || axiosError.message)}`);
+    }
   }
 
   /**

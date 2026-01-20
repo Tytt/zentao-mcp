@@ -360,7 +360,12 @@ const tools = [
                 },
                 spec: {
                     type: 'string',
-                    description: '需求描述',
+                    description: '需求描述（必填）',
+                },
+                reviewer: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: '评审人账号列表（必填），如 ["york", "admin"]',
                 },
                 verify: {
                     type: 'string',
@@ -391,7 +396,7 @@ const tools = [
                     description: '关键词',
                 },
             },
-            required: ['product', 'title', 'category', 'pri'],
+            required: ['product', 'title', 'category', 'pri', 'spec', 'reviewer'],
         },
     },
     {
@@ -1393,13 +1398,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 break;
             }
             case 'zentao_create_story': {
-                const { product, title, category, pri, spec, verify, estimate, module, plan, source, sourceNote, keywords } = args;
+                const { product, title, category, pri, spec, reviewer, verify, estimate, module, plan, source, sourceNote, keywords } = args;
                 result = await zentaoClient.createStory({
                     product,
                     title,
                     category,
                     pri,
                     spec,
+                    reviewer,
                     verify,
                     estimate,
                     module,

@@ -383,7 +383,12 @@ const tools: Tool[] = [
         },
         spec: {
           type: 'string',
-          description: '需求描述',
+          description: '需求描述（必填）',
+        },
+        reviewer: {
+          type: 'array',
+          items: { type: 'string' },
+          description: '评审人账号列表（必填），如 ["york", "admin"]',
         },
         verify: {
           type: 'string',
@@ -414,7 +419,7 @@ const tools: Tool[] = [
           description: '关键词',
       },
       },
-      required: ['product', 'title', 'category', 'pri'],
+      required: ['product', 'title', 'category', 'pri', 'spec', 'reviewer'],
     },
   },
   {
@@ -1360,13 +1365,13 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           branch, module, execution, keywords, os, browser,
           steps, task, story, deadline, openedBuild, assignedTo, project
         } = args as {
-          product: number;
-          title: string;
+            product: number;
+            title: string;
           severity: BugSeverity;
           pri: number;
           type: BugType;
           branch?: number;
-          module?: number;
+            module?: number;
           execution?: number;
           keywords?: string;
           os?: string;
@@ -1376,9 +1381,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           story?: number;
           deadline?: string;
           openedBuild?: string[];
-          assignedTo?: string;
-          project?: number;
-        };
+            assignedTo?: string;
+            project?: number;
+          };
         result = await zentaoClient.createBug({
           product,
           title,
@@ -1481,13 +1486,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       }
 
       case 'zentao_create_story': {
-        const { product, title, category, pri, spec, verify, estimate, module, plan, source, sourceNote, keywords } =
+        const { product, title, category, pri, spec, reviewer, verify, estimate, module, plan, source, sourceNote, keywords } =
           args as {
             product: number;
             title: string;
             category: StoryCategory;
             pri: number;
-            spec?: string;
+            spec: string;
+            reviewer: string[];
             verify?: string;
             estimate?: number;
             module?: number;
@@ -1502,6 +1508,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           category,
           pri,
           spec,
+          reviewer,
           verify,
           estimate,
           module,
