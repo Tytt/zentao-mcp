@@ -2,7 +2,7 @@
  * 禅道 API 客户端
  * 封装禅道 REST API 的调用，支持 Bug 和需求的增删改查
  */
-import { ZentaoConfig, Bug, Story, Product, Project, CreateBugParams, ResolveBugParams, CloseBugParams, ActivateBugParams, UpdateBugParams, CreateStoryParams, CloseStoryParams, UpdateStoryParams, ChangeStoryParams, BugStatus, StoryStatus, TestCase, TestCaseListResponse, CreateTestCaseParams, UpdateTestCaseParams, Task, CreateTaskParams, UpdateTaskParams, User, CreateUserParams, UpdateUserParams, Program, CreateProgramParams, UpdateProgramParams, Plan, CreatePlanParams, UpdatePlanParams, Release, Build, CreateBuildParams, UpdateBuildParams, Execution, CreateExecutionParams, UpdateExecutionParams, TestTask, CreateProductParams, UpdateProductParams, CreateProjectParams, UpdateProjectParams } from './types.js';
+import { ZentaoConfig, Bug, Story, Product, Project, CreateBugParams, ResolveBugParams, CloseBugParams, ActivateBugParams, UpdateBugParams, CreateStoryParams, CloseStoryParams, UpdateStoryParams, ChangeStoryParams, TestCase, TestCaseListResponse, CreateTestCaseParams, UpdateTestCaseParams, Task, CreateTaskParams, UpdateTaskParams, User, CreateUserParams, UpdateUserParams, Program, CreateProgramParams, UpdateProgramParams, Plan, CreatePlanParams, UpdatePlanParams, Release, Build, CreateBuildParams, UpdateBuildParams, Execution, CreateExecutionParams, UpdateExecutionParams, TestTask, CreateProductParams, UpdateProductParams, CreateProjectParams, UpdateProjectParams } from './types.js';
 /**
  * 禅道 API 客户端类
  * 提供与禅道系统交互的所有方法
@@ -34,18 +34,11 @@ export declare class ZentaoClient {
     /**
      * 获取 Bug 列表
      * @param productID - 产品 ID
-     * @param status - Bug 状态过滤 (可选)
+     * @param browseType - 浏览类型: all-全部, unclosed-未关闭, unresolved-未解决, toclosed-待关闭, openedbyme-我创建, assigntome-指派给我
      * @param limit - 返回数量限制
      * @returns Bug 列表
      */
-    getBugs(productID: number, status?: BugStatus, limit?: number): Promise<Bug[]>;
-    /**
-     * 获取未解决的 Bug 列表
-     * @param productID - 产品 ID
-     * @param limit - 返回数量限制
-     * @returns 未解决的 Bug 列表
-     */
-    getActiveBugs(productID: number, limit?: number): Promise<Bug[]>;
+    getBugs(productID: number, browseType?: string, limit?: number): Promise<Bug[]>;
     /**
      * 获取指派给某人的 Bug
      * @param account - 用户账号
@@ -93,18 +86,11 @@ export declare class ZentaoClient {
     /**
      * 获取需求列表
      * @param productID - 产品 ID
-     * @param status - 需求状态过滤（可选）
+     * @param browseType - 浏览类型: allstory-全部, unclosed-未关闭, draftstory-草稿, activestory-激活, reviewingstory-评审中, closedstory-已关闭, openedbyme-我创建
      * @param limit - 返回数量限制
      * @returns 需求列表
      */
-    getStories(productID: number, status?: StoryStatus, limit?: number): Promise<Story[]>;
-    /**
-     * 获取进行中的需求
-     * @param productID - 产品 ID
-     * @param limit - 返回数量限制
-     * @returns 进行中的需求列表
-     */
-    getActiveStories(productID: number, limit?: number): Promise<Story[]>;
+    getStories(productID: number, browseType?: string, limit?: number): Promise<Story[]>;
     /**
      * 获取需求详情
      * @param storyID - 需求 ID

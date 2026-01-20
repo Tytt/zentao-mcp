@@ -48,9 +48,7 @@ import {
 import dotenv from 'dotenv';
 import { ZentaoClient } from './zentao-client.js';
 import {
-  BugStatus,
   BugType,
-  StoryStatus,
   BugSeverity,
   TestCaseType,
   TestCaseStage,
@@ -91,7 +89,7 @@ const tools: Tool[] = [
   // Bug 相关工具
   {
     name: 'zentao_get_bugs',
-    description: '获取产品的 Bug 列表。可按状态筛选：active(未解决)、resolved(已解决)、closed(已关闭)',
+    description: '获取产品的 Bug 列表。可按浏览类型筛选',
     inputSchema: {
       type: 'object',
       properties: {
@@ -99,32 +97,14 @@ const tools: Tool[] = [
           type: 'number',
           description: '产品 ID',
         },
-        status: {
+        browseType: {
           type: 'string',
-          enum: ['active', 'resolved', 'closed'],
-          description: 'Bug 状态筛选（可选）',
+          enum: ['all', 'unclosed', 'unresolved', 'toclosed', 'openedbyme', 'assigntome', 'resolvedbyme', 'assigntonull'],
+          description: '浏览类型: all-全部, unclosed-未关闭(默认), unresolved-未解决, toclosed-待关闭, openedbyme-我创建, assigntome-指派给我, resolvedbyme-我解决, assigntonull-未指派',
         },
         limit: {
           type: 'number',
-          description: '返回数量限制，默认 100',
-        },
-      },
-      required: ['productID'],
-    },
-  },
-  {
-    name: 'zentao_get_active_bugs',
-    description: '获取产品未解决的 Bug 列表（快捷方式）',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        productID: {
-          type: 'number',
-          description: '产品 ID',
-        },
-        limit: {
-          type: 'number',
-          description: '返回数量限制，默认 100',
+          description: '返回数量限制，默认 20',
         },
       },
       required: ['productID'],
@@ -337,7 +317,7 @@ const tools: Tool[] = [
   // 需求相关工具
   {
     name: 'zentao_get_stories',
-    description: '获取产品的需求列表。可按状态筛选：draft(草稿)、active(激活)、changed(已变更)、reviewing(评审中)、closed(已关闭)',
+    description: '获取产品的需求列表。可按浏览类型筛选',
     inputSchema: {
       type: 'object',
       properties: {
@@ -345,32 +325,14 @@ const tools: Tool[] = [
           type: 'number',
           description: '产品 ID',
         },
-        status: {
+        browseType: {
           type: 'string',
-          enum: ['draft', 'active', 'changed', 'reviewing', 'closed'],
-          description: '需求状态筛选（可选）',
+          enum: ['allstory', 'unclosed', 'draftstory', 'activestory', 'reviewingstory', 'changingstory', 'closedstory', 'openedbyme', 'assignedtome', 'reviewbyme'],
+          description: '浏览类型: allstory-全部, unclosed-未关闭(默认), draftstory-草稿, activestory-激活, reviewingstory-评审中, changingstory-变更中, closedstory-已关闭, openedbyme-我创建, assignedtome-指派给我, reviewbyme-我评审',
         },
         limit: {
           type: 'number',
-          description: '返回数量限制，默认 100',
-        },
-      },
-      required: ['productID'],
-    },
-  },
-  {
-    name: 'zentao_get_active_stories',
-    description: '获取产品进行中的需求列表（快捷方式）',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        productID: {
-          type: 'number',
-          description: '产品 ID',
-        },
-        limit: {
-          type: 'number',
-          description: '返回数量限制，默认 100',
+          description: '返回数量限制，默认 20',
         },
       },
       required: ['productID'],
@@ -976,18 +938,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     switch (name) {
       // Bug 相关
       case 'zentao_get_bugs': {
-        const { productID, status, limit } = args as {
+        const { productID, browseType, limit } = args as {
           productID: number;
-          status?: BugStatus;
+          browseType?: string;
           limit?: number;
         };
-        result = await zentaoClient.getBugs(productID, status, limit);
-        break;
-      }
-
-      case 'zentao_get_active_bugs': {
-        const { productID, limit } = args as { productID: number; limit?: number };
-        result = await zentaoClient.getActiveBugs(productID, limit);
+        result = await zentaoClient.getBugs(productID, browseType, limit);
         break;
       }
 
@@ -1108,18 +1064,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // 需求相关
       case 'zentao_get_stories': {
-        const { productID, status, limit } = args as {
+        const { productID, browseType, limit } = args as {
           productID: number;
-          status?: StoryStatus;
+          browseType?: string;
           limit?: number;
         };
-        result = await zentaoClient.getStories(productID, status, limit);
-        break;
-      }
-
-      case 'zentao_get_active_stories': {
-        const { productID, limit } = args as { productID: number; limit?: number };
-        result = await zentaoClient.getActiveStories(productID, limit);
+        result = await zentaoClient.getStories(productID, browseType, limit);
         break;
       }
 
