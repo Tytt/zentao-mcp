@@ -44214,33 +44214,29 @@ var zentaoClient = new ZentaoClient({
   rejectUnauthorized: ZENTAO_SKIP_SSL ? false : void 0
 });
 var tools = [
-  // Bug 相关工具
+  // Bug 工具
   {
     name: "zentao_bugs",
-    description: "\u67E5\u8BE2 Bug\u3002\u4F20 bugID \u83B7\u53D6\u5355\u4E2A\u8BE6\u60C5\uFF0C\u4F20 productID \u83B7\u53D6\u5217\u8868",
+    description: "Bug \u64CD\u4F5C\u3002\u652F\u6301\uFF1A\u67E5\u8BE2\u5217\u8868\u3001\u67E5\u8BE2\u8BE6\u60C5\u3001\u521B\u5EFA\u3001\u89E3\u51B3\u3001\u5173\u95ED",
     inputSchema: {
       type: "object",
       properties: {
-        bugID: { type: "number", description: "Bug ID\uFF08\u83B7\u53D6\u8BE6\u60C5\u65F6\u4F7F\u7528\uFF09" },
-        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08\u83B7\u53D6\u5217\u8868\u65F6\u4F7F\u7528\uFF09" },
+        action: {
+          type: "string",
+          enum: ["list", "view", "create", "resolve", "close"],
+          description: "\u64CD\u4F5C\u7C7B\u578B: list-\u5217\u8868, view-\u8BE6\u60C5, create-\u521B\u5EFA, resolve-\u89E3\u51B3, close-\u5173\u95ED"
+        },
+        // 查询参数
+        bugID: { type: "number", description: "Bug ID\uFF08view/resolve/close \u65F6\u4F7F\u7528\uFF09" },
+        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08list/create \u65F6\u4F7F\u7528\uFF09" },
         browseType: {
           type: "string",
           enum: ["all", "unclosed", "unresolved", "toclosed", "openedbyme", "assigntome", "resolvedbyme", "assigntonull"],
-          description: "\u6D4F\u89C8\u7C7B\u578B: all-\u5168\u90E8, unclosed-\u672A\u5173\u95ED(\u9ED8\u8BA4), unresolved-\u672A\u89E3\u51B3, toclosed-\u5F85\u5173\u95ED, openedbyme-\u6211\u521B\u5EFA, assigntome-\u6307\u6D3E\u7ED9\u6211, resolvedbyme-\u6211\u89E3\u51B3, assigntonull-\u672A\u6307\u6D3E"
+          description: "\u6D4F\u89C8\u7C7B\u578B(list): all-\u5168\u90E8, unclosed-\u672A\u5173\u95ED(\u9ED8\u8BA4), unresolved-\u672A\u89E3\u51B3, toclosed-\u5F85\u5173\u95ED, openedbyme-\u6211\u521B\u5EFA, assigntome-\u6307\u6D3E\u7ED9\u6211, resolvedbyme-\u6211\u89E3\u51B3, assigntonull-\u672A\u6307\u6D3E"
         },
-        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 20" }
-      },
-      required: []
-    }
-  },
-  {
-    name: "zentao_create_bug",
-    description: "\u521B\u5EFA\u65B0\u7684 Bug",
-    inputSchema: {
-      type: "object",
-      properties: {
-        product: { type: "number", description: "\u4EA7\u54C1 ID" },
-        title: { type: "string", description: "Bug \u6807\u9898" },
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 20" },
+        // 创建参数
+        title: { type: "string", description: "Bug \u6807\u9898\uFF08create \u65F6\u5FC5\u586B\uFF09" },
         severity: { type: "number", enum: [1, 2, 3, 4], description: "\u4E25\u91CD\u7A0B\u5EA6: 1-\u81F4\u547D, 2-\u4E25\u91CD, 3-\u4E00\u822C, 4-\u8F7B\u5FAE" },
         pri: { type: "number", enum: [1, 2, 3, 4], description: "\u4F18\u5148\u7EA7: 1-\u7D27\u6025, 2-\u9AD8, 3-\u4E2D, 4-\u4F4E" },
         type: {
@@ -44253,56 +44249,41 @@ var tools = [
         openedBuild: { type: "array", items: { type: "string" }, description: '\u5F71\u54CD\u7248\u672C\uFF0C\u5982 ["trunk"]' },
         module: { type: "number", description: "\u6A21\u5757 ID" },
         story: { type: "number", description: "\u76F8\u5173\u9700\u6C42 ID" },
-        project: { type: "number", description: "\u9879\u76EE ID" }
-      },
-      required: ["product", "title", "severity", "pri", "type"]
-    }
-  },
-  {
-    name: "zentao_bug_action",
-    description: "Bug \u64CD\u4F5C\uFF1A\u89E3\u51B3\u6216\u5173\u95ED",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: { type: "number", description: "Bug ID" },
-        action: { type: "string", enum: ["resolve", "close"], description: "\u64CD\u4F5C\u7C7B\u578B: resolve-\u89E3\u51B3, close-\u5173\u95ED" },
+        project: { type: "number", description: "\u9879\u76EE ID" },
+        // 解决/关闭参数
         resolution: {
           type: "string",
           enum: ["bydesign", "duplicate", "external", "fixed", "notrepro", "postponed", "willnotfix"],
-          description: "\u89E3\u51B3\u65B9\u6848\uFF08resolve\u65F6\u5FC5\u586B\uFF09: fixed-\u5DF2\u4FEE\u590D, bydesign-\u8BBE\u8BA1\u5982\u6B64, duplicate-\u91CD\u590D, external-\u5916\u90E8\u539F\u56E0, notrepro-\u65E0\u6CD5\u91CD\u73B0, postponed-\u5EF6\u671F, willnotfix-\u4E0D\u4E88\u89E3\u51B3"
+          description: "\u89E3\u51B3\u65B9\u6848\uFF08resolve \u65F6\u5FC5\u586B\uFF09: fixed-\u5DF2\u4FEE\u590D, bydesign-\u8BBE\u8BA1\u5982\u6B64, duplicate-\u91CD\u590D, external-\u5916\u90E8\u539F\u56E0, notrepro-\u65E0\u6CD5\u91CD\u73B0, postponed-\u5EF6\u671F, willnotfix-\u4E0D\u4E88\u89E3\u51B3"
         },
-        comment: { type: "string", description: "\u5907\u6CE8" }
+        comment: { type: "string", description: "\u5907\u6CE8\uFF08resolve/close \u65F6\u4F7F\u7528\uFF09" }
       },
-      required: ["id", "action"]
+      required: ["action"]
     }
   },
-  // 需求相关工具
+  // 需求工具
   {
     name: "zentao_stories",
-    description: "\u67E5\u8BE2\u9700\u6C42\u3002\u4F20 storyID \u83B7\u53D6\u5355\u4E2A\u8BE6\u60C5\uFF0C\u4F20 productID \u83B7\u53D6\u5217\u8868",
+    description: "\u9700\u6C42\u64CD\u4F5C\u3002\u652F\u6301\uFF1A\u67E5\u8BE2\u5217\u8868\u3001\u67E5\u8BE2\u8BE6\u60C5\u3001\u521B\u5EFA\u3001\u5173\u95ED",
     inputSchema: {
       type: "object",
       properties: {
-        storyID: { type: "number", description: "\u9700\u6C42 ID\uFF08\u83B7\u53D6\u8BE6\u60C5\u65F6\u4F7F\u7528\uFF09" },
-        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08\u83B7\u53D6\u5217\u8868\u65F6\u4F7F\u7528\uFF09" },
+        action: {
+          type: "string",
+          enum: ["list", "view", "create", "close"],
+          description: "\u64CD\u4F5C\u7C7B\u578B: list-\u5217\u8868, view-\u8BE6\u60C5, create-\u521B\u5EFA, close-\u5173\u95ED"
+        },
+        // 查询参数
+        storyID: { type: "number", description: "\u9700\u6C42 ID\uFF08view/close \u65F6\u4F7F\u7528\uFF09" },
+        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08list/create \u65F6\u4F7F\u7528\uFF09" },
         browseType: {
           type: "string",
           enum: ["allstory", "unclosed", "draftstory", "activestory", "reviewingstory", "changingstory", "closedstory", "openedbyme", "assignedtome", "reviewbyme"],
-          description: "\u6D4F\u89C8\u7C7B\u578B: allstory-\u5168\u90E8, unclosed-\u672A\u5173\u95ED(\u9ED8\u8BA4), draftstory-\u8349\u7A3F, activestory-\u6FC0\u6D3B, reviewingstory-\u8BC4\u5BA1\u4E2D, changingstory-\u53D8\u66F4\u4E2D, closedstory-\u5DF2\u5173\u95ED, openedbyme-\u6211\u521B\u5EFA, assignedtome-\u6307\u6D3E\u7ED9\u6211, reviewbyme-\u6211\u8BC4\u5BA1"
+          description: "\u6D4F\u89C8\u7C7B\u578B(list): allstory-\u5168\u90E8, unclosed-\u672A\u5173\u95ED(\u9ED8\u8BA4), draftstory-\u8349\u7A3F, activestory-\u6FC0\u6D3B, reviewingstory-\u8BC4\u5BA1\u4E2D, changingstory-\u53D8\u66F4\u4E2D, closedstory-\u5DF2\u5173\u95ED, openedbyme-\u6211\u521B\u5EFA, assignedtome-\u6307\u6D3E\u7ED9\u6211, reviewbyme-\u6211\u8BC4\u5BA1"
         },
-        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 20" }
-      },
-      required: []
-    }
-  },
-  {
-    name: "zentao_create_story",
-    description: "\u521B\u5EFA\u65B0\u9700\u6C42",
-    inputSchema: {
-      type: "object",
-      properties: {
-        product: { type: "number", description: "\u4EA7\u54C1 ID" },
-        title: { type: "string", description: "\u9700\u6C42\u6807\u9898" },
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 20" },
+        // 创建参数
+        title: { type: "string", description: "\u9700\u6C42\u6807\u9898\uFF08create \u65F6\u5FC5\u586B\uFF09" },
         category: {
           type: "string",
           enum: ["feature", "interface", "performance", "safe", "experience", "improve", "other"],
@@ -44311,7 +44292,7 @@ var tools = [
         pri: { type: "number", enum: [1, 2, 3, 4], description: "\u4F18\u5148\u7EA7: 1-\u7D27\u6025, 2-\u9AD8, 3-\u4E2D, 4-\u4F4E" },
         spec: {
           type: "string",
-          description: `\u9700\u6C42\u63CF\u8FF0\uFF08\u5FC5\u586B\uFF09\u3002\u5EFA\u8BAE\u6309\u4EE5\u4E0B\u7985\u9053\u6A21\u677F\u683C\u5F0F\u586B\u5199\uFF1A
+          description: `\u9700\u6C42\u63CF\u8FF0\uFF08create \u65F6\u5FC5\u586B\uFF09\u3002\u5EFA\u8BAE\u6309\u4EE5\u4E0B\u7985\u9053\u6A21\u677F\u683C\u5F0F\u586B\u5199\uFF1A
 
 \u3010\u76EE\u6807\u3011\u8981\u8FBE\u5230\u7684\u7ED3\u679C\uFF08\u4F8B\u5982\uFF1A\u7528\u6237\u80FD\u5728X\u9875\u9762\u5B8C\u6210Y\u64CD\u4F5C\uFF09
 
@@ -44325,79 +44306,39 @@ var tools = [
 
 \u3010\u4FE1\u606F\u6765\u6E90\u3011\u76F8\u5173\u6587\u6863/\u622A\u56FE/\u65E7\u9700\u6C42\u94FE\u63A5/\u63A5\u53E3\u6587\u6863\u94FE\u63A5`
         },
-        reviewer: { type: "array", items: { type: "string" }, description: '\u8BC4\u5BA1\u4EBA\u8D26\u53F7\u5217\u8868\uFF08\u5FC5\u586B\uFF09\uFF0C\u5982 ["york", "admin"]' },
+        reviewer: { type: "array", items: { type: "string" }, description: '\u8BC4\u5BA1\u4EBA\u8D26\u53F7\u5217\u8868\uFF08create \u65F6\u5FC5\u586B\uFF09\uFF0C\u5982 ["york", "admin"]' },
         verify: { type: "string", description: "\u9A8C\u6536\u6807\u51C6" },
         estimate: { type: "number", description: "\u9884\u4F30\u5DE5\u65F6\uFF08\u5C0F\u65F6\uFF09" },
-        module: { type: "number", description: "\u6A21\u5757 ID" }
-      },
-      required: ["product", "title", "category", "pri", "spec", "reviewer"]
-    }
-  },
-  {
-    name: "zentao_close_story",
-    description: "\u5173\u95ED\u9700\u6C42",
-    inputSchema: {
-      type: "object",
-      properties: {
-        id: { type: "number", description: "\u9700\u6C42 ID" },
+        module: { type: "number", description: "\u6A21\u5757 ID" },
+        // 关闭参数
         closedReason: {
           type: "string",
           enum: ["done", "subdivided", "duplicate", "postponed", "willnotdo", "cancel", "bydesign"],
-          description: "\u5173\u95ED\u539F\u56E0: done-\u5DF2\u5B8C\u6210, subdivided-\u5DF2\u7EC6\u5206, duplicate-\u91CD\u590D, postponed-\u5EF6\u671F, willnotdo-\u4E0D\u505A, cancel-\u53D6\u6D88, bydesign-\u8BBE\u8BA1\u5982\u6B64"
+          description: "\u5173\u95ED\u539F\u56E0\uFF08close \u65F6\u5FC5\u586B\uFF09: done-\u5DF2\u5B8C\u6210, subdivided-\u5DF2\u7EC6\u5206, duplicate-\u91CD\u590D, postponed-\u5EF6\u671F, willnotdo-\u4E0D\u505A, cancel-\u53D6\u6D88, bydesign-\u8BBE\u8BA1\u5982\u6B64"
         },
-        comment: { type: "string", description: "\u5907\u6CE8" }
+        comment: { type: "string", description: "\u5907\u6CE8\uFF08close \u65F6\u4F7F\u7528\uFF09" }
       },
-      required: ["id", "closedReason"]
-    }
-  },
-  // 产品工具
-  {
-    name: "zentao_products",
-    description: "\u67E5\u8BE2\u4EA7\u54C1\u3002\u4F20 productID \u83B7\u53D6\u5355\u4E2A\u8BE6\u60C5\uFF0C\u5426\u5219\u83B7\u53D6\u5217\u8868",
-    inputSchema: {
-      type: "object",
-      properties: {
-        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08\u83B7\u53D6\u8BE6\u60C5\u65F6\u4F7F\u7528\uFF09" },
-        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
-      },
-      required: []
-    }
-  },
-  // 项目工具
-  {
-    name: "zentao_projects",
-    description: "\u67E5\u8BE2\u9879\u76EE\u3002\u4F20 projectID \u83B7\u53D6\u5355\u4E2A\u8BE6\u60C5\uFF0C\u5426\u5219\u83B7\u53D6\u5217\u8868",
-    inputSchema: {
-      type: "object",
-      properties: {
-        projectID: { type: "number", description: "\u9879\u76EE ID\uFF08\u83B7\u53D6\u8BE6\u60C5\u65F6\u4F7F\u7528\uFF09" },
-        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
-      },
-      required: []
+      required: ["action"]
     }
   },
   // 测试用例工具
   {
     name: "zentao_testcases",
-    description: "\u67E5\u8BE2\u6D4B\u8BD5\u7528\u4F8B\u3002\u4F20 caseID \u83B7\u53D6\u5355\u4E2A\u8BE6\u60C5\uFF0C\u4F20 productID \u83B7\u53D6\u5217\u8868",
+    description: "\u6D4B\u8BD5\u7528\u4F8B\u64CD\u4F5C\u3002\u652F\u6301\uFF1A\u67E5\u8BE2\u5217\u8868\u3001\u67E5\u8BE2\u8BE6\u60C5\u3001\u521B\u5EFA",
     inputSchema: {
       type: "object",
       properties: {
-        caseID: { type: "number", description: "\u7528\u4F8B ID\uFF08\u83B7\u53D6\u8BE6\u60C5\u65F6\u4F7F\u7528\uFF09" },
-        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08\u83B7\u53D6\u5217\u8868\u65F6\u4F7F\u7528\uFF09" },
-        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
-      },
-      required: []
-    }
-  },
-  {
-    name: "zentao_create_testcase",
-    description: "\u521B\u5EFA\u6D4B\u8BD5\u7528\u4F8B",
-    inputSchema: {
-      type: "object",
-      properties: {
-        product: { type: "number", description: "\u4EA7\u54C1 ID" },
-        title: { type: "string", description: "\u7528\u4F8B\u6807\u9898" },
+        action: {
+          type: "string",
+          enum: ["list", "view", "create"],
+          description: "\u64CD\u4F5C\u7C7B\u578B: list-\u5217\u8868, view-\u8BE6\u60C5, create-\u521B\u5EFA"
+        },
+        // 查询参数
+        caseID: { type: "number", description: "\u7528\u4F8B ID\uFF08view \u65F6\u4F7F\u7528\uFF09" },
+        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08list/create \u65F6\u4F7F\u7528\uFF09" },
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" },
+        // 创建参数
+        title: { type: "string", description: "\u7528\u4F8B\u6807\u9898\uFF08create \u65F6\u5FC5\u586B\uFF09" },
         type: {
           type: "string",
           enum: ["feature", "performance", "config", "install", "security", "interface", "unit", "other"],
@@ -44413,27 +44354,67 @@ var tools = [
             },
             required: ["desc", "expect"]
           },
-          description: "\u7528\u4F8B\u6B65\u9AA4"
+          description: "\u7528\u4F8B\u6B65\u9AA4\uFF08create \u65F6\u5FC5\u586B\uFF09"
         },
         pri: { type: "number", enum: [1, 2, 3, 4], description: "\u4F18\u5148\u7EA7: 1-\u9AD8, 2-\u4E2D, 3-\u4F4E, 4-\u6700\u4F4E" },
         precondition: { type: "string", description: "\u524D\u7F6E\u6761\u4EF6" },
         story: { type: "number", description: "\u76F8\u5173\u9700\u6C42 ID" }
       },
-      required: ["product", "title", "type", "steps"]
+      required: ["action"]
+    }
+  },
+  // 产品工具
+  {
+    name: "zentao_products",
+    description: "\u4EA7\u54C1\u64CD\u4F5C\u3002\u652F\u6301\uFF1A\u67E5\u8BE2\u5217\u8868\u3001\u67E5\u8BE2\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["list", "view"],
+          description: "\u64CD\u4F5C\u7C7B\u578B: list-\u5217\u8868, view-\u8BE6\u60C5"
+        },
+        productID: { type: "number", description: "\u4EA7\u54C1 ID\uFF08view \u65F6\u4F7F\u7528\uFF09" },
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
+      },
+      required: ["action"]
+    }
+  },
+  // 项目工具
+  {
+    name: "zentao_projects",
+    description: "\u9879\u76EE\u64CD\u4F5C\u3002\u652F\u6301\uFF1A\u67E5\u8BE2\u5217\u8868\u3001\u67E5\u8BE2\u8BE6\u60C5",
+    inputSchema: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["list", "view"],
+          description: "\u64CD\u4F5C\u7C7B\u578B: list-\u5217\u8868, view-\u8BE6\u60C5"
+        },
+        projectID: { type: "number", description: "\u9879\u76EE ID\uFF08view \u65F6\u4F7F\u7528\uFF09" },
+        limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
+      },
+      required: ["action"]
     }
   },
   // 用户工具
   {
     name: "zentao_users",
-    description: "\u67E5\u8BE2\u7528\u6237\u3002\u4F20 userID \u83B7\u53D6\u5355\u4E2A\u8BE6\u60C5\uFF0C\u4F20 me=true \u83B7\u53D6\u5F53\u524D\u7528\u6237\uFF0C\u5426\u5219\u83B7\u53D6\u5217\u8868",
+    description: "\u7528\u6237\u64CD\u4F5C\u3002\u652F\u6301\uFF1A\u67E5\u8BE2\u5217\u8868\u3001\u67E5\u8BE2\u8BE6\u60C5\u3001\u67E5\u8BE2\u5F53\u524D\u7528\u6237",
     inputSchema: {
       type: "object",
       properties: {
-        userID: { type: "number", description: "\u7528\u6237 ID\uFF08\u83B7\u53D6\u8BE6\u60C5\u65F6\u4F7F\u7528\uFF09" },
-        me: { type: "boolean", description: "\u83B7\u53D6\u5F53\u524D\u767B\u5F55\u7528\u6237\u4FE1\u606F" },
+        action: {
+          type: "string",
+          enum: ["list", "view", "me"],
+          description: "\u64CD\u4F5C\u7C7B\u578B: list-\u5217\u8868, view-\u8BE6\u60C5, me-\u5F53\u524D\u7528\u6237"
+        },
+        userID: { type: "number", description: "\u7528\u6237 ID\uFF08view \u65F6\u4F7F\u7528\uFF09" },
         limit: { type: "number", description: "\u8FD4\u56DE\u6570\u91CF\u9650\u5236\uFF0C\u9ED8\u8BA4 100" }
       },
-      required: []
+      required: ["action"]
     }
   },
   // 文档工具
@@ -44481,133 +44462,219 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
   try {
     let result;
     switch (name) {
-      // Bug 查询（列表或详情）
+      // Bug 操作
       case "zentao_bugs": {
-        const { bugID, productID, browseType, limit } = args;
-        if (bugID) {
-          result = await zentaoClient.getBug(bugID);
-          if (!result) {
-            return { content: [{ type: "text", text: `Bug #${bugID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
-          }
-        } else if (productID) {
-          result = await zentaoClient.getBugs(productID, browseType, limit);
-        } else {
-          return { content: [{ type: "text", text: "\u8BF7\u63D0\u4F9B bugID \u6216 productID" }], isError: true };
+        const { action, bugID, productID, browseType, limit, title, severity, pri, type, steps, assignedTo, openedBuild, module: module2, story, project, resolution, comment } = args;
+        switch (action) {
+          case "list":
+            if (!productID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: productID" }], isError: true };
+            }
+            result = await zentaoClient.getBugs(productID, browseType, limit);
+            break;
+          case "view":
+            if (!bugID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: bugID" }], isError: true };
+            }
+            result = await zentaoClient.getBug(bugID);
+            if (!result) {
+              return { content: [{ type: "text", text: `Bug #${bugID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
+            }
+            break;
+          case "create":
+            if (!productID || !title || !severity || !pri || !type) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: productID, title, severity, pri, type" }], isError: true };
+            }
+            result = await zentaoClient.createBug({
+              product: productID,
+              title,
+              severity,
+              pri,
+              type,
+              steps,
+              assignedTo,
+              openedBuild,
+              module: module2,
+              story,
+              project
+            });
+            break;
+          case "resolve":
+            if (!bugID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: bugID" }], isError: true };
+            }
+            if (!resolution) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: resolution" }], isError: true };
+            }
+            const resolveSuccess = await zentaoClient.resolveBug({ id: bugID, resolution, comment });
+            result = { success: resolveSuccess, message: resolveSuccess ? `Bug #${bugID} \u5DF2\u89E3\u51B3` : `Bug #${bugID} \u89E3\u51B3\u5931\u8D25` };
+            break;
+          case "close":
+            if (!bugID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: bugID" }], isError: true };
+            }
+            const closeSuccess = await zentaoClient.closeBug({ id: bugID, comment });
+            result = { success: closeSuccess, message: closeSuccess ? `Bug #${bugID} \u5DF2\u5173\u95ED` : `Bug #${bugID} \u5173\u95ED\u5931\u8D25` };
+            break;
+          default:
+            return { content: [{ type: "text", text: `\u672A\u77E5\u64CD\u4F5C\u7C7B\u578B: ${action}` }], isError: true };
         }
         break;
       }
-      // 创建 Bug
-      case "zentao_create_bug": {
-        const { product, title, severity, pri, type, steps, assignedTo, openedBuild, module: module2, story, project } = args;
-        result = await zentaoClient.createBug({ product, title, severity, pri, type, steps, assignedTo, openedBuild, module: module2, story, project });
-        break;
-      }
-      // Bug 操作（解决/关闭）
-      case "zentao_bug_action": {
-        const { id, action, resolution, comment } = args;
-        let success2;
-        if (action === "resolve") {
-          if (!resolution) {
-            return { content: [{ type: "text", text: "\u89E3\u51B3 Bug \u65F6\u5FC5\u987B\u63D0\u4F9B resolution" }], isError: true };
-          }
-          success2 = await zentaoClient.resolveBug({ id, resolution, comment });
-          result = { success: success2, message: success2 ? `Bug #${id} \u5DF2\u89E3\u51B3` : `Bug #${id} \u89E3\u51B3\u5931\u8D25` };
-        } else {
-          success2 = await zentaoClient.closeBug({ id, comment });
-          result = { success: success2, message: success2 ? `Bug #${id} \u5DF2\u5173\u95ED` : `Bug #${id} \u5173\u95ED\u5931\u8D25` };
-        }
-        break;
-      }
-      // 需求查询（列表或详情）
+      // 需求操作
       case "zentao_stories": {
-        const { storyID, productID, browseType, limit } = args;
-        if (storyID) {
-          result = await zentaoClient.getStory(storyID);
-          if (!result) {
-            return { content: [{ type: "text", text: `\u9700\u6C42 #${storyID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
-          }
-        } else if (productID) {
-          result = await zentaoClient.getStories(productID, browseType, limit);
-        } else {
-          return { content: [{ type: "text", text: "\u8BF7\u63D0\u4F9B storyID \u6216 productID" }], isError: true };
+        const { action, storyID, productID, browseType, limit, title, category, pri, spec, reviewer, verify, estimate, module: module2, closedReason, comment } = args;
+        switch (action) {
+          case "list":
+            if (!productID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: productID" }], isError: true };
+            }
+            result = await zentaoClient.getStories(productID, browseType, limit);
+            break;
+          case "view":
+            if (!storyID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: storyID" }], isError: true };
+            }
+            result = await zentaoClient.getStory(storyID);
+            if (!result) {
+              return { content: [{ type: "text", text: `\u9700\u6C42 #${storyID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
+            }
+            break;
+          case "create":
+            if (!productID || !title || !category || !pri || !spec || !reviewer) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: productID, title, category, pri, spec, reviewer" }], isError: true };
+            }
+            result = await zentaoClient.createStory({
+              product: productID,
+              title,
+              category,
+              pri,
+              spec,
+              reviewer,
+              verify,
+              estimate,
+              module: module2
+            });
+            break;
+          case "close":
+            if (!storyID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: storyID" }], isError: true };
+            }
+            if (!closedReason) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: closedReason" }], isError: true };
+            }
+            const success2 = await zentaoClient.closeStory({ id: storyID, closedReason, comment });
+            result = { success: success2, message: success2 ? `\u9700\u6C42 #${storyID} \u5DF2\u5173\u95ED` : `\u9700\u6C42 #${storyID} \u5173\u95ED\u5931\u8D25` };
+            break;
+          default:
+            return { content: [{ type: "text", text: `\u672A\u77E5\u64CD\u4F5C\u7C7B\u578B: ${action}` }], isError: true };
         }
         break;
       }
-      // 创建需求
-      case "zentao_create_story": {
-        const { product, title, category, pri, spec, reviewer, verify, estimate, module: module2 } = args;
-        result = await zentaoClient.createStory({ product, title, category, pri, spec, reviewer, verify, estimate, module: module2 });
-        break;
-      }
-      // 关闭需求
-      case "zentao_close_story": {
-        const { id, closedReason, comment } = args;
-        const success2 = await zentaoClient.closeStory({ id, closedReason, comment });
-        result = { success: success2, message: success2 ? `\u9700\u6C42 #${id} \u5DF2\u5173\u95ED` : `\u9700\u6C42 #${id} \u5173\u95ED\u5931\u8D25` };
-        break;
-      }
-      // 产品查询（列表或详情）
-      case "zentao_products": {
-        const { productID, limit } = args;
-        if (productID) {
-          result = await zentaoClient.getProduct(productID);
-          if (!result) {
-            return { content: [{ type: "text", text: `\u4EA7\u54C1 #${productID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
-          }
-        } else {
-          result = await zentaoClient.getProducts(limit);
-        }
-        break;
-      }
-      // 项目查询（列表或详情）
-      case "zentao_projects": {
-        const { projectID, limit } = args;
-        if (projectID) {
-          result = await zentaoClient.getProject(projectID);
-          if (!result) {
-            return { content: [{ type: "text", text: `\u9879\u76EE #${projectID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
-          }
-        } else {
-          result = await zentaoClient.getProjects(limit);
-        }
-        break;
-      }
-      // 测试用例查询（列表或详情）
+      // 测试用例操作
       case "zentao_testcases": {
-        const { caseID, productID, limit } = args;
-        if (caseID) {
-          result = await zentaoClient.getTestCase(caseID);
-          if (!result) {
-            return { content: [{ type: "text", text: `\u6D4B\u8BD5\u7528\u4F8B #${caseID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
-          }
-        } else if (productID) {
-          result = await zentaoClient.getTestCases(productID, limit);
-        } else {
-          return { content: [{ type: "text", text: "\u8BF7\u63D0\u4F9B caseID \u6216 productID" }], isError: true };
+        const { action, caseID, productID, limit, title, type, steps, pri, precondition, story } = args;
+        switch (action) {
+          case "list":
+            if (!productID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: productID" }], isError: true };
+            }
+            result = await zentaoClient.getTestCases(productID, limit);
+            break;
+          case "view":
+            if (!caseID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: caseID" }], isError: true };
+            }
+            result = await zentaoClient.getTestCase(caseID);
+            if (!result) {
+              return { content: [{ type: "text", text: `\u6D4B\u8BD5\u7528\u4F8B #${caseID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
+            }
+            break;
+          case "create":
+            if (!productID || !title || !type || !steps) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: productID, title, type, steps" }], isError: true };
+            }
+            result = await zentaoClient.createTestCase({
+              product: productID,
+              title,
+              type,
+              steps,
+              pri,
+              precondition,
+              story
+            });
+            break;
+          default:
+            return { content: [{ type: "text", text: `\u672A\u77E5\u64CD\u4F5C\u7C7B\u578B: ${action}` }], isError: true };
         }
         break;
       }
-      // 创建测试用例
-      case "zentao_create_testcase": {
-        const { product, title, type, steps, pri, precondition, story } = args;
-        result = await zentaoClient.createTestCase({ product, title, type, steps, pri, precondition, story });
+      // 产品操作
+      case "zentao_products": {
+        const { action, productID, limit } = args;
+        switch (action) {
+          case "list":
+            result = await zentaoClient.getProducts(limit);
+            break;
+          case "view":
+            if (!productID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: productID" }], isError: true };
+            }
+            result = await zentaoClient.getProduct(productID);
+            if (!result) {
+              return { content: [{ type: "text", text: `\u4EA7\u54C1 #${productID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
+            }
+            break;
+          default:
+            return { content: [{ type: "text", text: `\u672A\u77E5\u64CD\u4F5C\u7C7B\u578B: ${action}` }], isError: true };
+        }
         break;
       }
-      // 用户查询（列表/详情/当前用户）
+      // 项目操作
+      case "zentao_projects": {
+        const { action, projectID, limit } = args;
+        switch (action) {
+          case "list":
+            result = await zentaoClient.getProjects(limit);
+            break;
+          case "view":
+            if (!projectID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: projectID" }], isError: true };
+            }
+            result = await zentaoClient.getProject(projectID);
+            if (!result) {
+              return { content: [{ type: "text", text: `\u9879\u76EE #${projectID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
+            }
+            break;
+          default:
+            return { content: [{ type: "text", text: `\u672A\u77E5\u64CD\u4F5C\u7C7B\u578B: ${action}` }], isError: true };
+        }
+        break;
+      }
+      // 用户操作
       case "zentao_users": {
-        const { userID, me, limit } = args;
-        if (me) {
-          result = await zentaoClient.getMyProfile();
-          if (!result) {
-            return { content: [{ type: "text", text: "\u83B7\u53D6\u5F53\u524D\u7528\u6237\u4FE1\u606F\u5931\u8D25" }], isError: true };
-          }
-        } else if (userID) {
-          result = await zentaoClient.getUser(userID);
-          if (!result) {
-            return { content: [{ type: "text", text: `\u7528\u6237 #${userID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
-          }
-        } else {
-          result = await zentaoClient.getUsers(limit);
+        const { action, userID, limit } = args;
+        switch (action) {
+          case "list":
+            result = await zentaoClient.getUsers(limit);
+            break;
+          case "view":
+            if (!userID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: userID" }], isError: true };
+            }
+            result = await zentaoClient.getUser(userID);
+            if (!result) {
+              return { content: [{ type: "text", text: `\u7528\u6237 #${userID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
+            }
+            break;
+          case "me":
+            result = await zentaoClient.getMyProfile();
+            if (!result) {
+              return { content: [{ type: "text", text: "\u83B7\u53D6\u5F53\u524D\u7528\u6237\u4FE1\u606F\u5931\u8D25" }], isError: true };
+            }
+            break;
+          default:
+            return { content: [{ type: "text", text: `\u672A\u77E5\u64CD\u4F5C\u7C7B\u578B: ${action}` }], isError: true };
         }
         break;
       }
