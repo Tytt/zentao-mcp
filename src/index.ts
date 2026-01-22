@@ -313,6 +313,35 @@ const tools: Tool[] = [
       required: [],
     },
   },
+
+  // 文档工具
+  {
+    name: 'zentao_docs',
+    description: '文档操作。支持：获取文档库列表、获取文档列表、获取文档详情、创建/编辑文档',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        action: {
+          type: 'string',
+          enum: ['libs', 'list', 'view', 'create', 'edit'],
+          description: '操作类型: libs-文档库列表, list-文档列表, view-文档详情, create-创建文档, edit-编辑文档',
+        },
+        // 查询参数
+        libID: { type: 'number', description: '文档库 ID（list/create 时使用）' },
+        docID: { type: 'number', description: '文档 ID（view/edit 时使用）' },
+        objectType: { type: 'string', enum: ['product', 'project'], description: '对象类型（获取特定产品/项目的文档库时使用）' },
+        objectID: { type: 'number', description: '对象 ID（产品或项目 ID）' },
+        browseType: { type: 'string', description: '浏览类型: all-全部(默认), draft-草稿' },
+        // 创建/编辑参数
+        title: { type: 'string', description: '文档标题（create/edit 时使用）' },
+        content: { type: 'string', description: '文档内容（HTML 格式）' },
+        keywords: { type: 'string', description: '关键词' },
+        type: { type: 'string', enum: ['text', 'url'], description: '文档类型: text-富文本(默认), url-链接' },
+        url: { type: 'string', description: '外部链接（type=url 时使用）' },
+      },
+      required: ['action'],
+    },
+  },
 ];
 
 // ==================== 创建 MCP Server ====================
@@ -528,6 +557,83 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           }
         } else {
           result = await zentaoClient.getUsers(limit);
+        }
+        break;
+      }
+
+      // 文档操作
+      case 'zentao_docs': {
+        const { action, libID, docID, objectType, objectID, browseType, title, content, keywords, type, url } = args as {
+          action: string;
+          libID?: number;
+          docID?: number;
+          objectType?: 'product' | 'project';
+          objectID?: number;
+          browseType?: string;
+          title?: string;
+          content?: string;
+          keywords?: string;
+          type?: string;
+          url?: string;
+        };
+
+        switch (action) {
+          case 'libs':
+            // 获取文档库列表
+            if (objectType && objectID) {
+              result = await zentaoClient.getObjectDocLibs(objectType, objectID);
+            } else {
+              result = await zentaoClient.getDocLibs();
+            }
+            break;
+
+          case 'list':
+            // 获取文档列表
+            if (!libID) {
+              return { content: [{ type: 'text', text: '缺少必要参数: libID（文档库 ID）' }], isError: true };
+            }
+            result = await zentaoClient.getDocs(libID, browseType);
+            break;
+
+          case 'view':
+            // 获取文档详情
+            if (!docID) {
+              return { content: [{ type: 'text', text: '缺少必要参数: docID（文档 ID）' }], isError: true };
+            }
+            result = await zentaoClient.getDoc(docID);
+            if (!result) {
+              return { content: [{ type: 'text', text: `文档 #${docID} 不存在或无权限查看` }], isError: true };
+            }
+            break;
+
+          case 'create':
+            // 创建文档
+            if (!libID || !title) {
+              return { content: [{ type: 'text', text: '缺少必要参数: libID（文档库 ID）和 title（标题）' }], isError: true };
+            }
+            result = await zentaoClient.createDoc({
+              lib: libID,
+              title,
+              type: type as 'text' | 'url' | undefined,
+              content,
+              url,
+              keywords,
+            });
+            break;
+
+          case 'edit':
+            // 编辑文档
+            if (!docID) {
+              return { content: [{ type: 'text', text: '缺少必要参数: docID（文档 ID）' }], isError: true };
+            }
+            result = await zentaoClient.editDoc({ id: docID, title, content, keywords });
+            if (!result) {
+              return { content: [{ type: 'text', text: `编辑文档 #${docID} 失败` }], isError: true };
+            }
+            break;
+
+          default:
+            return { content: [{ type: 'text', text: `未知操作类型: ${action}` }], isError: true };
         }
         break;
       }

@@ -42719,6 +42719,10 @@ var ZentaoClient = class {
   http;
   sessionID = "";
   isLoggedIn = false;
+  // 内置 API 认证相关属性
+  legacySessionID = "";
+  legacySessionName = "zentaosid";
+  isLegacyLoggedIn = false;
   /**
    * 创建禅道客户端实例
    * @param config - 禅道配置
@@ -44027,6 +44031,138 @@ var ZentaoClient = class {
       return null;
     }
   }
+  // ==================== 内置 API 认证方法 ====================
+  /**
+   * 确保内置 API 已登录
+   * 内置 API 使用不同的认证方式：
+   * 1. 获取 sessionID: GET /api-getsessionid.json
+   * 2. 用户登录: POST /user-login.json?zentaosid=xxx
+   */
+  async ensureLegacyLogin() {
+    if (this.isLegacyLoggedIn) {
+      return;
+    }
+    try {
+      const sessionResp = await this.http.get("/api-getsessionid.json");
+      const sessionData = sessionResp.data.data || sessionResp.data;
+      this.legacySessionID = sessionData.sessionID || sessionData;
+      this.legacySessionName = sessionData.sessionName || "zentaosid";
+      await this.http.post(`/user-login.json?${this.legacySessionName}=${this.legacySessionID}`, {
+        account: this.config.account,
+        password: this.config.password
+      });
+      this.isLegacyLoggedIn = true;
+    } catch (error2) {
+      console.error("\u5185\u7F6E API \u767B\u5F55\u5931\u8D25:", error2);
+      throw new Error(`\u5185\u7F6E API \u767B\u5F55\u5931\u8D25: ${error2 instanceof Error ? error2.message : "\u672A\u77E5\u9519\u8BEF"}`);
+    }
+  }
+  /**
+   * 内置 API GET 请求
+   * @param path - 请求路径
+   * @returns 响应数据
+   */
+  async legacyGet(path) {
+    await this.ensureLegacyLogin();
+    const sep = path.includes("?") ? "&" : "?";
+    const response = await this.http.get(`${path}${sep}${this.legacySessionName}=${this.legacySessionID}`);
+    return response.data;
+  }
+  /**
+   * 内置 API POST 请求
+   * @param path - 请求路径
+   * @param data - 请求数据
+   * @returns 响应数据
+   */
+  async legacyPost(path, data) {
+    await this.ensureLegacyLogin();
+    const sep = path.includes("?") ? "&" : "?";
+    const response = await this.http.post(`${path}${sep}${this.legacySessionName}=${this.legacySessionID}`, data);
+    return response.data;
+  }
+  // ==================== 文档相关方法（内置 API）====================
+  /**
+   * 获取所有文档库列表
+   * @returns 文档库列表
+   */
+  async getDocLibs() {
+    const data = await this.legacyGet("/doc-allLibs.json");
+    return data.data || data.libs || [];
+  }
+  /**
+   * 获取产品/项目的文档库列表
+   * @param type - 对象类型: product 或 project
+   * @param objectID - 对象 ID（产品或项目 ID）
+   * @returns 文档库列表
+   */
+  async getObjectDocLibs(type, objectID) {
+    const data = await this.legacyGet(`/doc-objectLibs-${type}-${objectID}.json`);
+    return data.data || data.libs || [];
+  }
+  /**
+   * 获取文档库中的文档列表
+   * @param libID - 文档库 ID
+   * @param browseType - 浏览类型: all, draft, byediteddate 等
+   * @param moduleID - 模块 ID（可选）
+   * @returns 文档列表
+   */
+  async getDocs(libID, browseType = "all", moduleID = 0) {
+    const data = await this.legacyGet(`/doc-browse-${libID}-${browseType}-${moduleID}.json`);
+    return data.data || data.docs || [];
+  }
+  /**
+   * 获取文档详情
+   * @param docID - 文档 ID
+   * @returns 文档详情
+   */
+  async getDoc(docID) {
+    try {
+      const data = await this.legacyGet(`/doc-view-${docID}.json`);
+      return data.data || data.doc || null;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * 创建文档
+   * @param params - 创建文档参数
+   * @returns 创建的文档
+   */
+  async createDoc(params) {
+    const data = {
+      title: params.title,
+      type: params.type || "text",
+      content: params.content || ""
+    };
+    if (params.url !== void 0)
+      data.url = params.url;
+    if (params.keywords !== void 0)
+      data.keywords = params.keywords;
+    if (params.module !== void 0)
+      data.module = params.module;
+    const result = await this.legacyPost(`/doc-create-${params.lib}.json`, data);
+    return result.data || result.doc || result;
+  }
+  /**
+   * 编辑文档
+   * @param params - 编辑文档参数
+   * @returns 更新后的文档
+   */
+  async editDoc(params) {
+    const data = {};
+    if (params.title !== void 0)
+      data.title = params.title;
+    if (params.content !== void 0)
+      data.content = params.content;
+    if (params.keywords !== void 0)
+      data.keywords = params.keywords;
+    try {
+      const result = await this.legacyPost(`/doc-edit-${params.id}.json`, data);
+      return result.data || result.doc || null;
+    } catch {
+      return null;
+    }
+  }
 };
 
 // dist/index.js
@@ -44299,6 +44435,34 @@ var tools = [
       },
       required: []
     }
+  },
+  // 文档工具
+  {
+    name: "zentao_docs",
+    description: "\u6587\u6863\u64CD\u4F5C\u3002\u652F\u6301\uFF1A\u83B7\u53D6\u6587\u6863\u5E93\u5217\u8868\u3001\u83B7\u53D6\u6587\u6863\u5217\u8868\u3001\u83B7\u53D6\u6587\u6863\u8BE6\u60C5\u3001\u521B\u5EFA/\u7F16\u8F91\u6587\u6863",
+    inputSchema: {
+      type: "object",
+      properties: {
+        action: {
+          type: "string",
+          enum: ["libs", "list", "view", "create", "edit"],
+          description: "\u64CD\u4F5C\u7C7B\u578B: libs-\u6587\u6863\u5E93\u5217\u8868, list-\u6587\u6863\u5217\u8868, view-\u6587\u6863\u8BE6\u60C5, create-\u521B\u5EFA\u6587\u6863, edit-\u7F16\u8F91\u6587\u6863"
+        },
+        // 查询参数
+        libID: { type: "number", description: "\u6587\u6863\u5E93 ID\uFF08list/create \u65F6\u4F7F\u7528\uFF09" },
+        docID: { type: "number", description: "\u6587\u6863 ID\uFF08view/edit \u65F6\u4F7F\u7528\uFF09" },
+        objectType: { type: "string", enum: ["product", "project"], description: "\u5BF9\u8C61\u7C7B\u578B\uFF08\u83B7\u53D6\u7279\u5B9A\u4EA7\u54C1/\u9879\u76EE\u7684\u6587\u6863\u5E93\u65F6\u4F7F\u7528\uFF09" },
+        objectID: { type: "number", description: "\u5BF9\u8C61 ID\uFF08\u4EA7\u54C1\u6216\u9879\u76EE ID\uFF09" },
+        browseType: { type: "string", description: "\u6D4F\u89C8\u7C7B\u578B: all-\u5168\u90E8(\u9ED8\u8BA4), draft-\u8349\u7A3F" },
+        // 创建/编辑参数
+        title: { type: "string", description: "\u6587\u6863\u6807\u9898\uFF08create/edit \u65F6\u4F7F\u7528\uFF09" },
+        content: { type: "string", description: "\u6587\u6863\u5185\u5BB9\uFF08HTML \u683C\u5F0F\uFF09" },
+        keywords: { type: "string", description: "\u5173\u952E\u8BCD" },
+        type: { type: "string", enum: ["text", "url"], description: "\u6587\u6863\u7C7B\u578B: text-\u5BCC\u6587\u672C(\u9ED8\u8BA4), url-\u94FE\u63A5" },
+        url: { type: "string", description: "\u5916\u90E8\u94FE\u63A5\uFF08type=url \u65F6\u4F7F\u7528\uFF09" }
+      },
+      required: ["action"]
+    }
   }
 ];
 var server = new Server({
@@ -44444,6 +44608,59 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           }
         } else {
           result = await zentaoClient.getUsers(limit);
+        }
+        break;
+      }
+      // 文档操作
+      case "zentao_docs": {
+        const { action, libID, docID, objectType: objectType2, objectID, browseType, title, content, keywords, type, url: url3 } = args;
+        switch (action) {
+          case "libs":
+            if (objectType2 && objectID) {
+              result = await zentaoClient.getObjectDocLibs(objectType2, objectID);
+            } else {
+              result = await zentaoClient.getDocLibs();
+            }
+            break;
+          case "list":
+            if (!libID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: libID\uFF08\u6587\u6863\u5E93 ID\uFF09" }], isError: true };
+            }
+            result = await zentaoClient.getDocs(libID, browseType);
+            break;
+          case "view":
+            if (!docID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: docID\uFF08\u6587\u6863 ID\uFF09" }], isError: true };
+            }
+            result = await zentaoClient.getDoc(docID);
+            if (!result) {
+              return { content: [{ type: "text", text: `\u6587\u6863 #${docID} \u4E0D\u5B58\u5728\u6216\u65E0\u6743\u9650\u67E5\u770B` }], isError: true };
+            }
+            break;
+          case "create":
+            if (!libID || !title) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: libID\uFF08\u6587\u6863\u5E93 ID\uFF09\u548C title\uFF08\u6807\u9898\uFF09" }], isError: true };
+            }
+            result = await zentaoClient.createDoc({
+              lib: libID,
+              title,
+              type,
+              content,
+              url: url3,
+              keywords
+            });
+            break;
+          case "edit":
+            if (!docID) {
+              return { content: [{ type: "text", text: "\u7F3A\u5C11\u5FC5\u8981\u53C2\u6570: docID\uFF08\u6587\u6863 ID\uFF09" }], isError: true };
+            }
+            result = await zentaoClient.editDoc({ id: docID, title, content, keywords });
+            if (!result) {
+              return { content: [{ type: "text", text: `\u7F16\u8F91\u6587\u6863 #${docID} \u5931\u8D25` }], isError: true };
+            }
+            break;
+          default:
+            return { content: [{ type: "text", text: `\u672A\u77E5\u64CD\u4F5C\u7C7B\u578B: ${action}` }], isError: true };
         }
         break;
       }

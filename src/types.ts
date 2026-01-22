@@ -1,26 +1,26 @@
-/**
- * 禅道 MCP 类型定义
+﻿/**
+ * 绂呴亾 MCP 绫诲瀷瀹氫箟
  */
 
-/** 禅道配置选项 */
+/** 绂呴亾閰嶇疆閫夐」 */
 export interface ZentaoConfig {
-  /** 禅道服务器地址 */
+  /** 绂呴亾鏈嶅姟鍣ㄥ湴鍧€ */
   url: string;
-  /** 用户名 */
+  /** 鐢ㄦ埛鍚?*/
   account: string;
-  /** 密码 */
+  /** 瀵嗙爜 */
   password: string;
-  /** 是否跳过SSL证书验证（自签名证书时设为true） */
+  /** 鏄惁璺宠繃SSL璇佷功楠岃瘉锛堣嚜绛惧悕璇佷功鏃惰涓簍rue锛?*/
   rejectUnauthorized?: boolean;
 }
 
-/** Bug 状态枚举 */
+/** Bug 鐘舵€佹灇涓?*/
 export type BugStatus = 'active' | 'resolved' | 'closed';
 
-/** Bug 严重程度 */
+/** Bug 涓ラ噸绋嬪害 */
 export type BugSeverity = 1 | 2 | 3 | 4;
 
-/** Bug 信息 */
+/** Bug 淇℃伅 */
 export interface Bug {
   id: number;
   title: string;
@@ -46,83 +46,83 @@ export interface Bug {
   confirmed?: number;
 }
 
-/** Bug 类型 */
+/** Bug 绫诲瀷 */
 export type BugType = 'codeerror' | 'config' | 'install' | 'security' | 'performance' | 'standard' | 'automation' | 'designdefect' | 'others';
 
-/** 创建 Bug 参数 */
+/** 鍒涘缓 Bug 鍙傛暟 */
 export interface CreateBugParams {
-  /** 产品 ID */
+  /** 浜у搧 ID */
   product: number;
-  /** Bug 标题 */
+  /** Bug 鏍囬 */
   title: string;
-  /** 严重程度 1-4 (必填) */
+  /** 涓ラ噸绋嬪害 1-4 (蹇呭～) */
   severity: BugSeverity;
-  /** 优先级 1-4 (必填) */
+  /** 浼樺厛绾?1-4 (蹇呭～) */
   pri: number;
-  /** Bug 类型 (必填) */
+  /** Bug 绫诲瀷 (蹇呭～) */
   type: BugType;
-  /** 所属分支 */
+  /** 鎵€灞炲垎鏀?*/
   branch?: number;
-  /** 模块 ID */
+  /** 妯″潡 ID */
   module?: number;
-  /** 所属执行 */
+  /** 鎵€灞炴墽琛?*/
   execution?: number;
-  /** 关键词 */
+  /** 鍏抽敭璇?*/
   keywords?: string;
-  /** 操作系统 */
+  /** 鎿嶄綔绯荤粺 */
   os?: string;
-  /** 浏览器 */
+  /** 娴忚鍣?*/
   browser?: string;
-  /** 重现步骤 (支持 HTML 格式) */
+  /** 閲嶇幇姝ラ (鏀寔 HTML 鏍煎紡) */
   steps?: string;
-  /** 相关任务 ID */
+  /** 鐩稿叧浠诲姟 ID */
   task?: number;
-  /** 相关需求 ID */
+  /** 鐩稿叧闇€姹?ID */
   story?: number;
-  /** 截止日期 YYYY-MM-DD */
+  /** 鎴鏃ユ湡 YYYY-MM-DD */
   deadline?: string;
-  /** 影响版本 */
+  /** 褰卞搷鐗堟湰 */
   openedBuild?: string[];
-  /** 指派给（用户账号） */
+  /** 鎸囨淳缁欙紙鐢ㄦ埛璐﹀彿锛?*/
   assignedTo?: string;
-  /** 项目 ID */
+  /** 椤圭洰 ID */
   project?: number;
 }
 
-/** 解决 Bug 参数 */
+/** 瑙ｅ喅 Bug 鍙傛暟 */
 export interface ResolveBugParams {
   /** Bug ID */
   id: number;
-  /** 解决方案 */
+  /** 瑙ｅ喅鏂规 */
   resolution: 'bydesign' | 'duplicate' | 'external' | 'fixed' | 'notrepro' | 'postponed' | 'willnotfix';
-  /** 解决版本 */
+  /** 瑙ｅ喅鐗堟湰 */
   resolvedBuild?: string;
-  /** 备注 */
+  /** 澶囨敞 */
   comment?: string;
 }
 
-/** 关闭 Bug 参数 */
+/** 鍏抽棴 Bug 鍙傛暟 */
 export interface CloseBugParams {
   /** Bug ID */
   id: number;
-  /** 备注 */
+  /** 澶囨敞 */
   comment?: string;
 }
 
-/** 激活 Bug 参数 */
+/** 婵€娲?Bug 鍙傛暟 */
 export interface ActivateBugParams {
   /** Bug ID */
   id: number;
-  /** 指派给 */
+  /** 鎸囨淳缁?*/
   assignedTo?: string;
-  /** 备注 */
+  /** 澶囨敞 */
   comment?: string;
 }
 
-/** 需求状态 */
+/** 闇€姹傜姸鎬?*/
 export type StoryStatus = 'draft' | 'active' | 'changed' | 'reviewing' | 'closed';
 
-/** 需求信息 */
+/** 闇€姹備俊鎭?*/
 export interface Story {
   id: number;
   title: string;
@@ -148,50 +148,50 @@ export interface Story {
   verify?: string;
 }
 
-/** 需求类型 */
+/** 闇€姹傜被鍨?*/
 export type StoryCategory = 'feature' | 'interface' | 'performance' | 'safe' | 'experience' | 'improve' | 'other';
 
-/** 创建需求参数 */
+/** 鍒涘缓闇€姹傚弬鏁?*/
 export interface CreateStoryParams {
-  /** 产品 ID */
+  /** 浜у搧 ID */
   product: number;
-  /** 需求标题 */
+  /** 闇€姹傛爣棰?*/
   title: string;
-  /** 需求类型（必填） */
+  /** 闇€姹傜被鍨嬶紙蹇呭～锛?*/
   category: StoryCategory;
-  /** 优先级 1-4（必填） */
+  /** 浼樺厛绾?1-4锛堝繀濉級 */
   pri: number;
-  /** 需求描述（必填） */
+  /** 闇€姹傛弿杩帮紙蹇呭～锛?*/
   spec: string;
-  /** 评审人账号列表（必填） */
+  /** 璇勫浜鸿处鍙峰垪琛紙蹇呭～锛?*/
   reviewer: string[];
-  /** 验收标准 */
+  /** 楠屾敹鏍囧噯 */
   verify?: string;
-  /** 预估工时 */
+  /** 棰勪及宸ユ椂 */
   estimate?: number;
-  /** 模块 ID */
+  /** 妯″潡 ID */
   module?: number;
-  /** 计划 ID */
+  /** 璁″垝 ID */
   plan?: number;
-  /** 来源 */
+  /** 鏉ユ簮 */
   source?: string;
-  /** 来源备注 */
+  /** 鏉ユ簮澶囨敞 */
   sourceNote?: string;
-  /** 关键词 */
+  /** 鍏抽敭璇?*/
   keywords?: string;
 }
 
-/** 关闭需求参数 */
+/** 鍏抽棴闇€姹傚弬鏁?*/
 export interface CloseStoryParams {
-  /** 需求 ID */
+  /** 闇€姹?ID */
   id: number;
-  /** 关闭原因 */
+  /** 鍏抽棴鍘熷洜 */
   closedReason: 'done' | 'subdivided' | 'duplicate' | 'postponed' | 'willnotdo' | 'cancel' | 'bydesign';
-  /** 备注 */
+  /** 澶囨敞 */
   comment?: string;
 }
 
-/** 产品信息 */
+/** 浜у搧淇℃伅 */
 export interface Product {
   id: number;
   name: string;
@@ -200,7 +200,7 @@ export interface Product {
   desc?: string;
 }
 
-/** 项目信息 */
+/** 椤圭洰淇℃伅 */
 export interface Project {
   id: number;
   name: string;
@@ -210,7 +210,7 @@ export interface Project {
   end?: string;
 }
 
-/** API 响应基础结构 */
+/** API 鍝嶅簲鍩虹缁撴瀯 */
 export interface ApiResponse<T = unknown> {
   status?: string;
   data?: T;
@@ -218,197 +218,197 @@ export interface ApiResponse<T = unknown> {
   message?: string;
 }
 
-// ==================== 测试用例相关类型 ====================
+// ==================== 娴嬭瘯鐢ㄤ緥鐩稿叧绫诲瀷 ====================
 
-/** 测试用例类型 */
+/** 娴嬭瘯鐢ㄤ緥绫诲瀷 */
 export type TestCaseType = 'feature' | 'performance' | 'config' | 'install' | 'security' | 'interface' | 'unit' | 'other';
 
-/** 测试用例适用阶段 */
+/** 娴嬭瘯鐢ㄤ緥閫傜敤闃舵 */
 export type TestCaseStage = 'unittest' | 'feature' | 'intergrate' | 'system' | 'smoke' | 'bvt';
 
-/** 测试用例状态 */
+/** 娴嬭瘯鐢ㄤ緥鐘舵€?*/
 export type TestCaseStatus = 'wait' | 'normal' | 'blocked' | 'investigate';
 
-/** 测试用例步骤 */
+/** 娴嬭瘯鐢ㄤ緥姝ラ */
 export interface TestCaseStep {
-  /** 步骤ID */
+  /** 姝ラID */
   id?: number;
-  /** 步骤描述 */
+  /** 姝ラ鎻忚堪 */
   desc: string;
-  /** 期望结果 */
+  /** 鏈熸湜缁撴灉 */
   expect: string;
 }
 
-/** 测试用例信息 */
+/** 娴嬭瘯鐢ㄤ緥淇℃伅 */
 export interface TestCase {
-  /** 用例ID */
+  /** 鐢ㄤ緥ID */
   id: number;
-  /** 所属产品 */
+  /** 鎵€灞炰骇鍝?*/
   product: number;
-  /** 所属分支 */
+  /** 鎵€灞炲垎鏀?*/
   branch?: number;
-  /** 所属模块 */
+  /** 鎵€灞炴ā鍧?*/
   module?: number;
-  /** 相关需求 */
+  /** 鐩稿叧闇€姹?*/
   story?: number;
-  /** 需求版本 */
+  /** 闇€姹傜増鏈?*/
   storyVersion?: number;
-  /** 用例标题 */
+  /** 鐢ㄤ緥鏍囬 */
   title: string;
-  /** 前置条件 */
+  /** 鍓嶇疆鏉′欢 */
   precondition?: string;
-  /** 关键词 */
+  /** 鍏抽敭璇?*/
   keywords?: string;
-  /** 优先级 */
+  /** 浼樺厛绾?*/
   pri: number;
-  /** 用例类型 */
+  /** 鐢ㄤ緥绫诲瀷 */
   type: TestCaseType;
-  /** 适用阶段 */
+  /** 閫傜敤闃舵 */
   stage?: TestCaseStage;
-  /** 状态 */
+  /** 鐘舵€?*/
   status: TestCaseStatus;
-  /** 创建人 */
+  /** 鍒涘缓浜?*/
   openedBy: {
     id: number;
     account: string;
     avatar: string;
     realname: string;
   } | string;
-  /** 创建时间 */
+  /** 鍒涘缓鏃堕棿 */
   openedDate: string;
-  /** 来自Bug */
+  /** 鏉ヨ嚜Bug */
   fromBug?: number;
-  /** 来自用例 */
+  /** 鏉ヨ嚜鐢ㄤ緥 */
   fromCaseID?: number;
-  /** 用例步骤 */
+  /** 鐢ㄤ緥姝ラ */
   steps?: TestCaseStep[];
-  /** 最后执行人 */
+  /** 鏈€鍚庢墽琛屼汉 */
   lastRunner?: string;
-  /** 最后执行时间 */
+  /** 鏈€鍚庢墽琛屾椂闂?*/
   lastRunDate?: string;
-  /** 最后执行结果 */
+  /** 鏈€鍚庢墽琛岀粨鏋?*/
   lastRunResult?: string;
-  /** 状态名称 */
+  /** 鐘舵€佸悕绉?*/
   statusName?: string;
 }
 
-/** 创建测试用例参数 */
+/** 鍒涘缓娴嬭瘯鐢ㄤ緥鍙傛暟 */
 export interface CreateTestCaseParams {
-  /** 产品 ID */
+  /** 浜у搧 ID */
   product: number;
-  /** 用例标题 */
+  /** 鐢ㄤ緥鏍囬 */
   title: string;
-  /** 用例类型 */
+  /** 鐢ㄤ緥绫诲瀷 */
   type: TestCaseType;
-  /** 用例步骤 */
+  /** 鐢ㄤ緥姝ラ */
   steps: TestCaseStep[];
-  /** 所属分支 */
+  /** 鎵€灞炲垎鏀?*/
   branch?: number;
-  /** 所属模块 */
+  /** 鎵€灞炴ā鍧?*/
   module?: number;
-  /** 所属需求 */
+  /** 鎵€灞為渶姹?*/
   story?: number;
-  /** 适用阶段 */
+  /** 閫傜敤闃舵 */
   stage?: TestCaseStage;
-  /** 前置条件 */
+  /** 鍓嶇疆鏉′欢 */
   precondition?: string;
-  /** 优先级 1-4 */
+  /** 浼樺厛绾?1-4 */
   pri?: number;
-  /** 关键词 */
+  /** 鍏抽敭璇?*/
   keywords?: string;
 }
 
-/** 测试用例列表响应 */
+/** 娴嬭瘯鐢ㄤ緥鍒楄〃鍝嶅簲 */
 export interface TestCaseListResponse {
-  /** 当前页数 */
+  /** 褰撳墠椤垫暟 */
   page: number;
-  /** 用例总数 */
+  /** 鐢ㄤ緥鎬绘暟 */
   total: number;
-  /** 每页用例数 */
+  /** 姣忛〉鐢ㄤ緥鏁?*/
   limit: number;
-  /** 用例列表 */
+  /** 鐢ㄤ緥鍒楄〃 */
   testcases: TestCase[];
 }
 
-// ==================== 更新/删除 Bug 相关类型 ====================
+// ==================== 鏇存柊/鍒犻櫎 Bug 鐩稿叧绫诲瀷 ====================
 
-/** 更新 Bug 参数 */
+/** 鏇存柊 Bug 鍙傛暟 */
 export interface UpdateBugParams {
   /** Bug ID */
   id: number;
-  /** Bug 标题 */
+  /** Bug 鏍囬 */
   title?: string;
-  /** 严重程度 */
+  /** 涓ラ噸绋嬪害 */
   severity?: BugSeverity;
-  /** 优先级 */
+  /** 浼樺厛绾?*/
   pri?: number;
-  /** Bug 类型 */
+  /** Bug 绫诲瀷 */
   type?: string;
-  /** 模块 ID */
+  /** 妯″潡 ID */
   module?: number;
-  /** 执行 ID */
+  /** 鎵ц ID */
   execution?: number;
-  /** 关键词 */
+  /** 鍏抽敭璇?*/
   keywords?: string;
-  /** 操作系统 */
+  /** 鎿嶄綔绯荤粺 */
   os?: string;
-  /** 浏览器 */
+  /** 娴忚鍣?*/
   browser?: string;
-  /** 重现步骤 */
+  /** 閲嶇幇姝ラ */
   steps?: string;
-  /** 关联任务 */
+  /** 鍏宠仈浠诲姟 */
   task?: number;
-  /** 关联需求 */
+  /** 鍏宠仈闇€姹?*/
   story?: number;
-  /** 截止日期 */
+  /** 鎴鏃ユ湡 */
   deadline?: string;
-  /** 影响版本 */
+  /** 褰卞搷鐗堟湰 */
   openedBuild?: string[];
 }
 
-// ==================== 更新/删除/变更 Story 相关类型 ====================
+// ==================== 鏇存柊/鍒犻櫎/鍙樻洿 Story 鐩稿叧绫诲瀷 ====================
 
-/** 更新需求参数 */
+/** 鏇存柊闇€姹傚弬鏁?*/
 export interface UpdateStoryParams {
-  /** 需求 ID */
+  /** 闇€姹?ID */
   id: number;
-  /** 模块 ID */
+  /** 妯″潡 ID */
   module?: number;
-  /** 来源 */
+  /** 鏉ユ簮 */
   source?: string;
-  /** 来源备注 */
+  /** 鏉ユ簮澶囨敞 */
   sourceNote?: string;
-  /** 优先级 */
+  /** 浼樺厛绾?*/
   pri?: number;
-  /** 类型 */
+  /** 绫诲瀷 */
   category?: string;
-  /** 预计工时 */
+  /** 棰勮宸ユ椂 */
   estimate?: number;
-  /** 关键词 */
+  /** 鍏抽敭璇?*/
   keywords?: string;
 }
 
-/** 变更需求参数 */
+/** 鍙樻洿闇€姹傚弬鏁?*/
 export interface ChangeStoryParams {
-  /** 需求 ID */
+  /** 闇€姹?ID */
   id: number;
-  /** 标题 */
+  /** 鏍囬 */
   title?: string;
-  /** 描述 */
+  /** 鎻忚堪 */
   spec?: string;
-  /** 验收标准 */
+  /** 楠屾敹鏍囧噯 */
   verify?: string;
 }
 
-// ==================== 任务 (Tasks) 相关类型 ====================
+// ==================== 浠诲姟 (Tasks) 鐩稿叧绫诲瀷 ====================
 
-/** 任务类型枚举 */
+/** 浠诲姟绫诲瀷鏋氫妇 */
 export type TaskType = 'design' | 'devel' | 'request' | 'test' | 'study' | 'discuss' | 'ui' | 'affair' | 'misc';
 
-/** 任务状态 */
+/** 浠诲姟鐘舵€?*/
 export type TaskStatus = 'wait' | 'doing' | 'done' | 'closed' | 'cancel';
 
-/** 任务信息 */
+/** 浠诲姟淇℃伅 */
 export interface Task {
   id: number;
   project: number;
@@ -438,65 +438,65 @@ export interface Task {
   progress?: number;
 }
 
-/** 创建任务参数 */
+/** 鍒涘缓浠诲姟鍙傛暟 */
 export interface CreateTaskParams {
-  /** 执行 ID */
+  /** 鎵ц ID */
   execution: number;
-  /** 任务名称 */
+  /** 浠诲姟鍚嶇О */
   name: string;
-  /** 任务类型 */
+  /** 浠诲姟绫诲瀷 */
   type: TaskType;
-  /** 指派给（用户账号列表） */
+  /** 鎸囨淳缁欙紙鐢ㄦ埛璐﹀彿鍒楄〃锛?*/
   assignedTo: string[];
-  /** 预计开始日期 YYYY-MM-DD */
+  /** 棰勮寮€濮嬫棩鏈?YYYY-MM-DD */
   estStarted: string;
-  /** 截止日期 YYYY-MM-DD */
+  /** 鎴鏃ユ湡 YYYY-MM-DD */
   deadline: string;
-  /** 模块 ID */
+  /** 妯″潡 ID */
   module?: number;
-  /** 关联需求 ID */
+  /** 鍏宠仈闇€姹?ID */
   story?: number;
-  /** 来自 Bug ID */
+  /** 鏉ヨ嚜 Bug ID */
   fromBug?: number;
-  /** 优先级 */
+  /** 浼樺厛绾?*/
   pri?: number;
-  /** 预计工时 */
+  /** 棰勮宸ユ椂 */
   estimate?: number;
-  /** 任务描述 */
+  /** 浠诲姟鎻忚堪 */
   desc?: string;
 }
 
-/** 更新任务参数 */
+/** 鏇存柊浠诲姟鍙傛暟 */
 export interface UpdateTaskParams {
-  /** 任务 ID */
+  /** 浠诲姟 ID */
   id: number;
-  /** 任务名称 */
+  /** 浠诲姟鍚嶇О */
   name?: string;
-  /** 任务类型 */
+  /** 浠诲姟绫诲瀷 */
   type?: TaskType;
-  /** 指派给 */
+  /** 鎸囨淳缁?*/
   assignedTo?: string[];
-  /** 模块 ID */
+  /** 妯″潡 ID */
   module?: number;
-  /** 关联需求 */
+  /** 鍏宠仈闇€姹?*/
   story?: number;
-  /** 来自 Bug */
+  /** 鏉ヨ嚜 Bug */
   fromBug?: number;
-  /** 优先级 */
+  /** 浼樺厛绾?*/
   pri?: number;
-  /** 预计工时 */
+  /** 棰勮宸ユ椂 */
   estimate?: number;
-  /** 预计开始日期 */
+  /** 棰勮寮€濮嬫棩鏈?*/
   estStarted?: string;
-  /** 截止日期 */
+  /** 鎴鏃ユ湡 */
   deadline?: string;
-  /** 任务描述 */
+  /** 浠诲姟鎻忚堪 */
   desc?: string;
 }
 
-// ==================== 用户 (Users) 相关类型 ====================
+// ==================== 鐢ㄦ埛 (Users) 鐩稿叧绫诲瀷 ====================
 
-/** 用户信息 */
+/** 鐢ㄦ埛淇℃伅 */
 export interface User {
   id: number;
   account: string;
@@ -519,71 +519,71 @@ export interface User {
   deleted?: boolean;
 }
 
-/** 创建用户参数 */
+/** 鍒涘缓鐢ㄦ埛鍙傛暟 */
 export interface CreateUserParams {
-  /** 用户账号 */
+  /** 鐢ㄦ埛璐﹀彿 */
   account: string;
-  /** 密码 */
+  /** 瀵嗙爜 */
   password: string;
-  /** 真实姓名 */
+  /** 鐪熷疄濮撳悕 */
   realname?: string;
-  /** 性别 */
+  /** 鎬у埆 */
   gender?: 'm' | 'f';
-  /** 界面权限 */
+  /** 鐣岄潰鏉冮檺 */
   visions?: string[];
-  /** 角色 */
+  /** 瑙掕壊 */
   role?: string;
-  /** 部门 ID */
+  /** 閮ㄩ棬 ID */
   dept?: number;
-  /** 邮箱 */
+  /** 閭 */
   email?: string;
-  /** 手机号 */
+  /** 鎵嬫満鍙?*/
   mobile?: string;
-  /** 电话 */
+  /** 鐢佃瘽 */
   phone?: string;
-  /** 微信 */
+  /** 寰俊 */
   weixin?: string;
   /** QQ */
   qq?: string;
-  /** 地址 */
+  /** 鍦板潃 */
   address?: string;
-  /** 入职日期 YYYY-MM-DD */
+  /** 鍏ヨ亴鏃ユ湡 YYYY-MM-DD */
   join?: string;
 }
 
-/** 更新用户参数 */
+/** 鏇存柊鐢ㄦ埛鍙傛暟 */
 export interface UpdateUserParams {
-  /** 用户 ID */
+  /** 鐢ㄦ埛 ID */
   id: number;
-  /** 真实姓名 */
+  /** 鐪熷疄濮撳悕 */
   realname?: string;
-  /** 角色 */
+  /** 瑙掕壊 */
   role?: string;
-  /** 部门 ID */
+  /** 閮ㄩ棬 ID */
   dept?: number;
-  /** 邮箱 */
+  /** 閭 */
   email?: string;
-  /** 性别 */
+  /** 鎬у埆 */
   gender?: 'm' | 'f';
-  /** 手机号 */
+  /** 鎵嬫満鍙?*/
   mobile?: string;
-  /** 电话 */
+  /** 鐢佃瘽 */
   phone?: string;
-  /** 微信 */
+  /** 寰俊 */
   weixin?: string;
   /** QQ */
   qq?: string;
-  /** 地址 */
+  /** 鍦板潃 */
   address?: string;
-  /** 入职日期 */
+  /** 鍏ヨ亴鏃ユ湡 */
   join?: string;
-  /** 密码 */
+  /** 瀵嗙爜 */
   password?: string;
 }
 
-// ==================== 项目集 (Programs) 相关类型 ====================
+// ==================== 椤圭洰闆?(Programs) 鐩稿叧绫诲瀷 ====================
 
-/** 项目集信息 */
+/** 椤圭洰闆嗕俊鎭?*/
 export interface Program {
   id: number;
   name: string;
@@ -600,59 +600,59 @@ export interface Program {
   acl?: string;
 }
 
-/** 创建项目集参数 */
+/** 鍒涘缓椤圭洰闆嗗弬鏁?*/
 export interface CreateProgramParams {
-  /** 名称 */
+  /** 鍚嶇О */
   name: string;
-  /** 开始日期 YYYY-MM-DD */
+  /** 寮€濮嬫棩鏈?YYYY-MM-DD */
   begin: string;
-  /** 结束日期 YYYY-MM-DD */
+  /** 缁撴潫鏃ユ湡 YYYY-MM-DD */
   end: string;
-  /** 父项目集 ID */
+  /** 鐖堕」鐩泦 ID */
   parent?: number;
-  /** 负责人账号 */
+  /** 璐熻矗浜鸿处鍙?*/
   PM?: string;
-  /** 预算 */
+  /** 棰勭畻 */
   budget?: number;
-  /** 预算币种 */
+  /** 棰勭畻甯佺 */
   budgetUnit?: string;
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
-  /** 访问控制 */
+  /** 璁块棶鎺у埗 */
   acl?: string;
-  /** 白名单 */
+  /** 鐧藉悕鍗?*/
   whitelist?: string[];
 }
 
-/** 更新项目集参数 */
+/** 鏇存柊椤圭洰闆嗗弬鏁?*/
 export interface UpdateProgramParams {
-  /** 项目集 ID */
+  /** 椤圭洰闆?ID */
   id: number;
-  /** 名称 */
+  /** 鍚嶇О */
   name?: string;
-  /** 父项目集 */
+  /** 鐖堕」鐩泦 */
   parent?: number;
-  /** 负责人 */
+  /** 璐熻矗浜?*/
   PM?: string;
-  /** 预算 */
+  /** 棰勭畻 */
   budget?: number;
-  /** 预算币种 */
+  /** 棰勭畻甯佺 */
   budgetUnit?: string;
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
-  /** 开始日期 */
+  /** 寮€濮嬫棩鏈?*/
   begin?: string;
-  /** 结束日期 */
+  /** 缁撴潫鏃ユ湡 */
   end?: string;
-  /** 访问控制 */
+  /** 璁块棶鎺у埗 */
   acl?: string;
-  /** 白名单 */
+  /** 鐧藉悕鍗?*/
   whitelist?: string[];
 }
 
-// ==================== 计划 (Plans) 相关类型 ====================
+// ==================== 璁″垝 (Plans) 鐩稿叧绫诲瀷 ====================
 
-/** 计划信息 */
+/** 璁″垝淇℃伅 */
 export interface Plan {
   id: number;
   product: number;
@@ -667,43 +667,43 @@ export interface Plan {
   status?: string;
 }
 
-/** 创建计划参数 */
+/** 鍒涘缓璁″垝鍙傛暟 */
 export interface CreatePlanParams {
-  /** 产品 ID */
+  /** 浜у搧 ID */
   product: number;
-  /** 计划名称 */
+  /** 璁″垝鍚嶇О */
   title: string;
-  /** 开始日期 */
+  /** 寮€濮嬫棩鏈?*/
   begin?: string;
-  /** 结束日期 */
+  /** 缁撴潫鏃ユ湡 */
   end?: string;
-  /** 分支 ID */
+  /** 鍒嗘敮 ID */
   branch?: number;
-  /** 父计划 ID */
+  /** 鐖惰鍒?ID */
   parent?: number;
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
 }
 
-/** 更新计划参数 */
+/** 鏇存柊璁″垝鍙傛暟 */
 export interface UpdatePlanParams {
-  /** 计划 ID */
+  /** 璁″垝 ID */
   id: number;
-  /** 计划名称 */
+  /** 璁″垝鍚嶇О */
   title?: string;
-  /** 开始日期 */
+  /** 寮€濮嬫棩鏈?*/
   begin?: string;
-  /** 结束日期 */
+  /** 缁撴潫鏃ユ湡 */
   end?: string;
-  /** 分支 ID */
+  /** 鍒嗘敮 ID */
   branch?: number;
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
 }
 
-// ==================== 发布 (Releases) 相关类型 ====================
+// ==================== 鍙戝竷 (Releases) 鐩稿叧绫诲瀷 ====================
 
-/** 发布信息 */
+/** 鍙戝竷淇℃伅 */
 export interface Release {
   id: number;
   project?: number;
@@ -720,9 +720,9 @@ export interface Release {
   projectName?: string;
 }
 
-// ==================== 版本 (Builds) 相关类型 ====================
+// ==================== 鐗堟湰 (Builds) 鐩稿叧绫诲瀷 ====================
 
-/** 版本信息 */
+/** 鐗堟湰淇℃伅 */
 export interface Build {
   id: number;
   project: number;
@@ -740,51 +740,51 @@ export interface Build {
   productName?: string;
 }
 
-/** 创建版本参数 */
+/** 鍒涘缓鐗堟湰鍙傛暟 */
 export interface CreateBuildParams {
-  /** 项目 ID */
+  /** 椤圭洰 ID */
   project: number;
-  /** 版本名称 */
+  /** 鐗堟湰鍚嶇О */
   name: string;
-  /** 执行 ID */
+  /** 鎵ц ID */
   execution: number;
-  /** 产品 ID */
+  /** 浜у搧 ID */
   product: number;
-  /** 构建者账号 */
+  /** 鏋勫缓鑰呰处鍙?*/
   builder: string;
-  /** 分支 ID */
+  /** 鍒嗘敮 ID */
   branch?: number;
-  /** 打包日期 */
+  /** 鎵撳寘鏃ユ湡 */
   date?: string;
-  /** 源代码地址 */
+  /** 婧愪唬鐮佸湴鍧€ */
   scmPath?: string;
-  /** 下载地址 */
+  /** 涓嬭浇鍦板潃 */
   filePath?: string;
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
 }
 
-/** 更新版本参数 */
+/** 鏇存柊鐗堟湰鍙傛暟 */
 export interface UpdateBuildParams {
-  /** 版本 ID */
+  /** 鐗堟湰 ID */
   id: number;
-  /** 版本名称 */
+  /** 鐗堟湰鍚嶇О */
   name?: string;
-  /** 源代码地址 */
+  /** 婧愪唬鐮佸湴鍧€ */
   scmPath?: string;
-  /** 下载地址 */
+  /** 涓嬭浇鍦板潃 */
   filePath?: string;
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
-  /** 构建者 */
+  /** 鏋勫缓鑰?*/
   builder?: string;
-  /** 打包日期 */
+  /** 鎵撳寘鏃ユ湡 */
   date?: string;
 }
 
-// ==================== 执行 (Executions) 相关类型 ====================
+// ==================== 鎵ц (Executions) 鐩稿叧绫诲瀷 ====================
 
-/** 执行信息 */
+/** 鎵ц淇℃伅 */
 export interface Execution {
   id: number;
   project: number;
@@ -808,175 +808,264 @@ export interface Execution {
   progress?: number;
 }
 
-/** 创建执行参数 */
+/** 鍒涘缓鎵ц鍙傛暟 */
 export interface CreateExecutionParams {
-  /** 项目 ID */
+  /** 椤圭洰 ID */
   project: number;
-  /** 执行名称 */
+  /** 鎵ц鍚嶇О */
   name: string;
-  /** 执行代号 */
+  /** 鎵ц浠ｅ彿 */
   code: string;
-  /** 开始日期 */
+  /** 寮€濮嬫棩鏈?*/
   begin: string;
-  /** 结束日期 */
+  /** 缁撴潫鏃ユ湡 */
   end: string;
-  /** 可用工作日 */
+  /** 鍙敤宸ヤ綔鏃?*/
   days?: number;
-  /** 类型 */
+  /** 绫诲瀷 */
   lifetime?: string;
-  /** 产品负责人 */
+  /** 浜у搧璐熻矗浜?*/
   PO?: string;
-  /** 迭代负责人 */
+  /** 杩唬璐熻矗浜?*/
   PM?: string;
-  /** 测试负责人 */
+  /** 娴嬭瘯璐熻矗浜?*/
   QD?: string;
-  /** 发布负责人 */
+  /** 鍙戝竷璐熻矗浜?*/
   RD?: string;
-  /** 团队成员 */
+  /** 鍥㈤槦鎴愬憳 */
   teamMembers?: string[];
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
-  /** 访问控制 */
+  /** 璁块棶鎺у埗 */
   acl?: string;
-  /** 白名单 */
+  /** 鐧藉悕鍗?*/
   whitelist?: string[];
 }
 
-/** 更新执行参数 */
+/** 鏇存柊鎵ц鍙傛暟 */
 export interface UpdateExecutionParams {
-  /** 执行 ID */
+  /** 鎵ц ID */
   id: number;
-  /** 执行名称 */
+  /** 鎵ц鍚嶇О */
   name?: string;
-  /** 执行代号 */
+  /** 鎵ц浠ｅ彿 */
   code?: string;
-  /** 开始日期 */
+  /** 寮€濮嬫棩鏈?*/
   begin?: string;
-  /** 结束日期 */
+  /** 缁撴潫鏃ユ湡 */
   end?: string;
-  /** 可用工作日 */
+  /** 鍙敤宸ヤ綔鏃?*/
   days?: number;
-  /** 类型 */
+  /** 绫诲瀷 */
   lifetime?: string;
-  /** 产品负责人 */
+  /** 浜у搧璐熻矗浜?*/
   PO?: string;
-  /** 迭代负责人 */
+  /** 杩唬璐熻矗浜?*/
   PM?: string;
-  /** 测试负责人 */
+  /** 娴嬭瘯璐熻矗浜?*/
   QD?: string;
-  /** 发布负责人 */
+  /** 鍙戝竷璐熻矗浜?*/
   RD?: string;
-  /** 团队成员 */
+  /** 鍥㈤槦鎴愬憳 */
   teamMembers?: string[];
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
-  /** 访问控制 */
+  /** 璁块棶鎺у埗 */
   acl?: string;
-  /** 白名单 */
+  /** 鐧藉悕鍗?*/
   whitelist?: string[];
 }
 
-// ==================== 产品/项目 创建/更新相关类型 ====================
+// ==================== 浜у搧/椤圭洰 鍒涘缓/鏇存柊鐩稿叧绫诲瀷 ====================
 
-/** 创建产品参数 */
+/** 鍒涘缓浜у搧鍙傛暟 */
 export interface CreateProductParams {
-  /** 产品名称 */
+  /** 浜у搧鍚嶇О */
   name: string;
-  /** 产品代号 */
+  /** 浜у搧浠ｅ彿 */
   code: string;
-  /** 所属项目集 ID */
+  /** 鎵€灞為」鐩泦 ID */
   program?: number;
-  /** 产品线 ID */
+  /** 浜у搧绾?ID */
   line?: number;
-  /** 产品负责人 */
+  /** 浜у搧璐熻矗浜?*/
   PO?: string;
-  /** 测试负责人 */
+  /** 娴嬭瘯璐熻矗浜?*/
   QD?: string;
-  /** 发布负责人 */
+  /** 鍙戝竷璐熻矗浜?*/
   RD?: string;
-  /** 产品类型 */
+  /** 浜у搧绫诲瀷 */
   type?: 'normal' | 'branch' | 'platform';
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
-  /** 访问控制 */
+  /** 璁块棶鎺у埗 */
   acl?: 'open' | 'private';
-  /** 白名单 */
+  /** 鐧藉悕鍗?*/
   whitelist?: string[];
 }
 
-/** 更新产品参数 */
+/** 鏇存柊浜у搧鍙傛暟 */
 export interface UpdateProductParams {
-  /** 产品 ID */
+  /** 浜у搧 ID */
   id: number;
-  /** 产品名称 */
+  /** 浜у搧鍚嶇О */
   name?: string;
-  /** 产品代号 */
+  /** 浜у搧浠ｅ彿 */
   code?: string;
-  /** 所属项目集 */
+  /** 鎵€灞為」鐩泦 */
   program?: number;
-  /** 产品线 */
+  /** 浜у搧绾?*/
   line?: number;
-  /** 产品类型 */
+  /** 浜у搧绫诲瀷 */
   type?: 'normal' | 'branch' | 'platform';
-  /** 状态 */
+  /** 鐘舵€?*/
   status?: string;
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
-  /** 产品负责人 */
+  /** 浜у搧璐熻矗浜?*/
   PO?: string;
-  /** 测试负责人 */
+  /** 娴嬭瘯璐熻矗浜?*/
   QD?: string;
-  /** 发布负责人 */
+  /** 鍙戝竷璐熻矗浜?*/
   RD?: string;
-  /** 访问控制 */
+  /** 璁块棶鎺у埗 */
   acl?: 'open' | 'private';
-  /** 白名单 */
+  /** 鐧藉悕鍗?*/
   whitelist?: string[];
 }
 
-/** 创建项目参数 */
+/** 鍒涘缓椤圭洰鍙傛暟 */
 export interface CreateProjectParams {
-  /** 项目名称 */
+  /** 椤圭洰鍚嶇О */
   name: string;
-  /** 项目代号 */
+  /** 椤圭洰浠ｅ彿 */
   code: string;
-  /** 开始日期 YYYY-MM-DD */
+  /** 寮€濮嬫棩鏈?YYYY-MM-DD */
   begin: string;
-  /** 结束日期 YYYY-MM-DD */
+  /** 缁撴潫鏃ユ湡 YYYY-MM-DD */
   end: string;
-  /** 关联产品 ID 列表 */
+  /** 鍏宠仈浜у搧 ID 鍒楄〃 */
   products: number[];
-  /** 项目模型 */
+  /** 椤圭洰妯″瀷 */
   model?: 'scrum' | 'waterfall';
-  /** 所属项目集 ID */
+  /** 鎵€灞為」鐩泦 ID */
   parent?: number;
 }
 
-/** 更新项目参数 */
+/** 鏇存柊椤圭洰鍙傛暟 */
 export interface UpdateProjectParams {
-  /** 项目 ID */
+  /** 椤圭洰 ID */
   id: number;
-  /** 项目名称 */
+  /** 椤圭洰鍚嶇О */
   name?: string;
-  /** 项目代号 */
+  /** 椤圭洰浠ｅ彿 */
   code?: string;
-  /** 所属项目集 */
+  /** 鎵€灞為」鐩泦 */
   parent?: number;
-  /** 项目负责人 */
+  /** 椤圭洰璐熻矗浜?*/
   PM?: string;
-  /** 预算 */
+  /** 棰勭畻 */
   budget?: number;
-  /** 预算币种 */
+  /** 棰勭畻甯佺 */
   budgetUnit?: string;
-  /** 可用工作日 */
+  /** 鍙敤宸ヤ綔鏃?*/
   days?: number;
-  /** 描述 */
+  /** 鎻忚堪 */
   desc?: string;
-  /** 访问控制 */
+  /** 璁块棶鎺у埗 */
   acl?: string;
-  /** 白名单 */
+  /** 鐧藉悕鍗?*/
   whitelist?: string[];
-  /** 权限控制 */
+  /** 鏉冮檺鎺у埗 */
   auth?: string;
 }
 
+// ==================== 鏂囨。 (Doc) 鐩稿叧绫诲瀷 ====================
+
+/** 鏂囨。绫诲瀷 */
+export type DocType = 'text' | 'url' | 'word' | 'ppt' | 'excel';
+
+/** 鏂囨。淇℃伅 */
+export interface Doc {
+  /** 鏂囨。 ID */
+  id: number;
+  /** 鎵€灞炴枃妗ｅ簱 ID */
+  lib: number;
+  /** 鎵€灞炴ā鍧?ID */
+  module?: number;
+  /** 鏂囨。鏍囬 */
+  title: string;
+  /** 鏂囨。绫诲瀷 */
+  type: DocType;
+  /** 鏂囨。鍐呭锛圚TML锛?*/
+  content?: string;
+  /** 澶栭儴閾炬帴锛坱ype=url 鏃讹級 */
+  url?: string;
+  /** 鍏抽敭璇?*/
+  keywords?: string;
+  /** 娣诲姞浜?*/
+  addedBy?: string;
+  /** 娣诲姞鏃堕棿 */
+  addedDate?: string;
+  /** 缂栬緫浜?*/
+  editedBy?: string;
+  /** 缂栬緫鏃堕棿 */
+  editedDate?: string;
+  /** 鐗堟湰鍙?*/
+  version?: number;
+  /** 璁块棶鏉冮檺 */
+  acl?: string;
+  /** 娴忚娆℃暟 */
+  views?: number;
+}
+
+/** 鏂囨。搴撶被鍨?*/
+export type DocLibType = 'product' | 'project' | 'execution' | 'custom' | 'api';
+
+/** 鏂囨。搴撲俊鎭?*/
+export interface DocLib {
+  /** 鏂囨。搴?ID */
+  id: number;
+  /** 鏂囨。搴撳悕绉?*/
+  name: string;
+  /** 鏂囨。搴撶被鍨?*/
+  type: DocLibType;
+  /** 鍏宠仈瀵硅薄 ID锛堜骇鍝?椤圭洰 ID锛?*/
+  product?: number;
+  /** 鍏宠仈椤圭洰 ID */
+  project?: number;
+  /** 璁块棶鏉冮檺 */
+  acl?: string;
+  /** 鏄惁鍒犻櫎 */
+  deleted?: boolean;
+}
+
+/** 鍒涘缓鏂囨。鍙傛暟 */
+export interface CreateDocParams {
+  /** 鏂囨。搴?ID */
+  lib: number;
+  /** 鏂囨。鏍囬 */
+  title: string;
+  /** 鏂囨。绫诲瀷 */
+  type?: DocType;
+  /** 鏂囨。鍐呭锛圚TML锛?*/
+  content?: string;
+  /** 澶栭儴閾炬帴锛坱ype=url 鏃讹級 */
+  url?: string;
+  /** 鍏抽敭璇?*/
+  keywords?: string;
+  /** 鎵€灞炴ā鍧?ID */
+  module?: number;
+}
+
+/** 缂栬緫鏂囨。鍙傛暟 */
+export interface EditDocParams {
+  /** 鏂囨。 ID */
+  id: number;
+  /** 鏂囨。鏍囬 */
+  title?: string;
+  /** 鏂囨。鍐呭锛圚TML锛?*/
+  content?: string;
+  /** 鍏抽敭璇?*/
+  keywords?: string;
+}

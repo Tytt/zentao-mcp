@@ -2,7 +2,7 @@
  * 禅道 API 客户端
  * 封装禅道 REST API 的调用，支持 Bug 和需求的增删改查
  */
-import { ZentaoConfig, Bug, Story, Product, Project, CreateBugParams, ResolveBugParams, CloseBugParams, ActivateBugParams, UpdateBugParams, CreateStoryParams, CloseStoryParams, UpdateStoryParams, ChangeStoryParams, TestCase, TestCaseListResponse, CreateTestCaseParams, Task, CreateTaskParams, UpdateTaskParams, User, CreateUserParams, UpdateUserParams, Program, CreateProgramParams, UpdateProgramParams, Plan, CreatePlanParams, UpdatePlanParams, Release, Build, CreateBuildParams, UpdateBuildParams, Execution, CreateExecutionParams, UpdateExecutionParams, CreateProductParams, UpdateProductParams, CreateProjectParams, UpdateProjectParams } from './types.js';
+import { ZentaoConfig, Bug, Story, Product, Project, CreateBugParams, ResolveBugParams, CloseBugParams, ActivateBugParams, UpdateBugParams, CreateStoryParams, CloseStoryParams, UpdateStoryParams, ChangeStoryParams, TestCase, TestCaseListResponse, CreateTestCaseParams, Task, CreateTaskParams, UpdateTaskParams, User, CreateUserParams, UpdateUserParams, Program, CreateProgramParams, UpdateProgramParams, Plan, CreatePlanParams, UpdatePlanParams, Release, Build, CreateBuildParams, UpdateBuildParams, Execution, CreateExecutionParams, UpdateExecutionParams, CreateProductParams, UpdateProductParams, CreateProjectParams, UpdateProjectParams, Doc, DocLib, CreateDocParams, EditDocParams } from './types.js';
 /**
  * 禅道 API 客户端类
  * 提供与禅道系统交互的所有方法
@@ -12,6 +12,9 @@ export declare class ZentaoClient {
     private http;
     private sessionID;
     private isLoggedIn;
+    private legacySessionID;
+    private legacySessionName;
+    private isLegacyLoggedIn;
     /**
      * 创建禅道客户端实例
      * @param config - 禅道配置
@@ -400,5 +403,63 @@ export declare class ZentaoClient {
      * @returns 更新后的执行
      */
     updateExecution(params: UpdateExecutionParams): Promise<Execution | null>;
+    /**
+     * 确保内置 API 已登录
+     * 内置 API 使用不同的认证方式：
+     * 1. 获取 sessionID: GET /api-getsessionid.json
+     * 2. 用户登录: POST /user-login.json?zentaosid=xxx
+     */
+    private ensureLegacyLogin;
+    /**
+     * 内置 API GET 请求
+     * @param path - 请求路径
+     * @returns 响应数据
+     */
+    private legacyGet;
+    /**
+     * 内置 API POST 请求
+     * @param path - 请求路径
+     * @param data - 请求数据
+     * @returns 响应数据
+     */
+    private legacyPost;
+    /**
+     * 获取所有文档库列表
+     * @returns 文档库列表
+     */
+    getDocLibs(): Promise<DocLib[]>;
+    /**
+     * 获取产品/项目的文档库列表
+     * @param type - 对象类型: product 或 project
+     * @param objectID - 对象 ID（产品或项目 ID）
+     * @returns 文档库列表
+     */
+    getObjectDocLibs(type: 'product' | 'project', objectID: number): Promise<DocLib[]>;
+    /**
+     * 获取文档库中的文档列表
+     * @param libID - 文档库 ID
+     * @param browseType - 浏览类型: all, draft, byediteddate 等
+     * @param moduleID - 模块 ID（可选）
+     * @returns 文档列表
+     */
+    getDocs(libID: number, browseType?: string, moduleID?: number): Promise<Doc[]>;
+    /**
+     * 获取文档详情
+     * @param docID - 文档 ID
+     * @returns 文档详情
+     */
+    getDoc(docID: number): Promise<Doc | null>;
+    /**
+     * 创建文档
+     * @param params - 创建文档参数
+     * @returns 创建的文档
+     */
+    createDoc(params: CreateDocParams): Promise<Doc>;
+    /**
+     * 编辑文档
+     * @param params - 编辑文档参数
+     * @returns 更新后的文档
+     */
+    editDoc(params: EditDocParams): Promise<Doc | null>;
 }
 //# sourceMappingURL=zentao-client.d.ts.map

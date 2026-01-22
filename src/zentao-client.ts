@@ -48,6 +48,10 @@ import {
   UpdateProductParams,
   CreateProjectParams,
   UpdateProjectParams,
+  Doc,
+  DocLib,
+  CreateDocParams,
+  EditDocParams,
 } from './types.js';
 
 /**
@@ -59,6 +63,11 @@ export class ZentaoClient {
   private http: AxiosInstance;
   private sessionID: string = '';
   private isLoggedIn: boolean = false;
+  
+  // 内置 API 认证相关属性
+  private legacySessionID: string = '';
+  private legacySessionName: string = 'zentaosid';
+  private isLegacyLoggedIn: boolean = false;
 
   /**
    * 创建禅道客户端实例
@@ -1486,7 +1495,152 @@ export class ZentaoClient {
     }
   }
 
-  // ==================== 测试单相关方法 ====================
+  // ==================== 内置 API 认证方法 ====================
+
+  /**
+   * 确保内置 API 已登录
+   * 内置 API 使用不同的认证方式：
+   * 1. 获取 sessionID: GET /api-getsessionid.json
+   * 2. 用户登录: POST /user-login.json?zentaosid=xxx
+   */
+  private async ensureLegacyLogin(): Promise<void> {
+    if (this.isLegacyLoggedIn) {
+      return;
+    }
+
+    try {
+      // 1. 获取 sessionID
+      const sessionResp = await this.http.get('/api-getsessionid.json');
+      const sessionData = sessionResp.data.data || sessionResp.data;
+      this.legacySessionID = sessionData.sessionID || sessionData;
+      this.legacySessionName = sessionData.sessionName || 'zentaosid';
+
+      // 2. 用户登录（内置 API 使用明文密码）
+      await this.http.post(
+        `/user-login.json?${this.legacySessionName}=${this.legacySessionID}`,
+        {
+          account: this.config.account,
+          password: this.config.password,
+        }
+      );
+
+      this.isLegacyLoggedIn = true;
+    } catch (error) {
+      console.error('内置 API 登录失败:', error);
+      throw new Error(`内置 API 登录失败: ${error instanceof Error ? error.message : '未知错误'}`);
+    }
+  }
+
+  /**
+   * 内置 API GET 请求
+   * @param path - 请求路径
+   * @returns 响应数据
+   */
+  private async legacyGet<T = unknown>(path: string): Promise<T> {
+    await this.ensureLegacyLogin();
+    const sep = path.includes('?') ? '&' : '?';
+    const response = await this.http.get(`${path}${sep}${this.legacySessionName}=${this.legacySessionID}`);
+    return response.data;
+  }
+
+  /**
+   * 内置 API POST 请求
+   * @param path - 请求路径
+   * @param data - 请求数据
+   * @returns 响应数据
+   */
+  private async legacyPost<T = unknown>(path: string, data: Record<string, unknown>): Promise<T> {
+    await this.ensureLegacyLogin();
+    const sep = path.includes('?') ? '&' : '?';
+    const response = await this.http.post(`${path}${sep}${this.legacySessionName}=${this.legacySessionID}`, data);
+    return response.data;
+  }
+
+  // ==================== 文档相关方法（内置 API）====================
+
+  /**
+   * 获取所有文档库列表
+   * @returns 文档库列表
+   */
+  async getDocLibs(): Promise<DocLib[]> {
+    const data = await this.legacyGet<{ data?: DocLib[]; libs?: DocLib[] }>('/doc-allLibs.json');
+    return data.data || data.libs || [];
+  }
+
+  /**
+   * 获取产品/项目的文档库列表
+   * @param type - 对象类型: product 或 project
+   * @param objectID - 对象 ID（产品或项目 ID）
+   * @returns 文档库列表
+   */
+  async getObjectDocLibs(type: 'product' | 'project', objectID: number): Promise<DocLib[]> {
+    const data = await this.legacyGet<{ data?: DocLib[]; libs?: DocLib[] }>(`/doc-objectLibs-${type}-${objectID}.json`);
+    return data.data || data.libs || [];
+  }
+
+  /**
+   * 获取文档库中的文档列表
+   * @param libID - 文档库 ID
+   * @param browseType - 浏览类型: all, draft, byediteddate 等
+   * @param moduleID - 模块 ID（可选）
+   * @returns 文档列表
+   */
+  async getDocs(libID: number, browseType: string = 'all', moduleID: number = 0): Promise<Doc[]> {
+    const data = await this.legacyGet<{ data?: Doc[]; docs?: Doc[] }>(`/doc-browse-${libID}-${browseType}-${moduleID}.json`);
+    return data.data || data.docs || [];
+  }
+
+  /**
+   * 获取文档详情
+   * @param docID - 文档 ID
+   * @returns 文档详情
+   */
+  async getDoc(docID: number): Promise<Doc | null> {
+    try {
+      const data = await this.legacyGet<{ data?: Doc; doc?: Doc }>(`/doc-view-${docID}.json`);
+      return data.data || data.doc || null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 创建文档
+   * @param params - 创建文档参数
+   * @returns 创建的文档
+   */
+  async createDoc(params: CreateDocParams): Promise<Doc> {
+    const data: Record<string, unknown> = {
+      title: params.title,
+      type: params.type || 'text',
+      content: params.content || '',
+    };
+    if (params.url !== undefined) data.url = params.url;
+    if (params.keywords !== undefined) data.keywords = params.keywords;
+    if (params.module !== undefined) data.module = params.module;
+
+    const result = await this.legacyPost<{ data?: Doc; doc?: Doc }>(`/doc-create-${params.lib}.json`, data);
+    return result.data || result.doc || (result as unknown as Doc);
+  }
+
+  /**
+   * 编辑文档
+   * @param params - 编辑文档参数
+   * @returns 更新后的文档
+   */
+  async editDoc(params: EditDocParams): Promise<Doc | null> {
+    const data: Record<string, unknown> = {};
+    if (params.title !== undefined) data.title = params.title;
+    if (params.content !== undefined) data.content = params.content;
+    if (params.keywords !== undefined) data.keywords = params.keywords;
+
+    try {
+      const result = await this.legacyPost<{ data?: Doc; doc?: Doc }>(`/doc-edit-${params.id}.json`, data);
+      return result.data || result.doc || null;
+    } catch {
+      return null;
+    }
+  }
 
 }
 
