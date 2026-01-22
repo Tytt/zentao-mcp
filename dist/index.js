@@ -69,40 +69,21 @@ const zentaoClient = new ZentaoClient({
 const tools = [
     // Bug 相关工具
     {
-        name: 'zentao_get_bugs',
-        description: '获取产品的 Bug 列表。可按浏览类型筛选',
+        name: 'zentao_bugs',
+        description: '查询 Bug。传 bugID 获取单个详情，传 productID 获取列表',
         inputSchema: {
             type: 'object',
             properties: {
-                productID: {
-                    type: 'number',
-                    description: '产品 ID',
-                },
+                bugID: { type: 'number', description: 'Bug ID（获取详情时使用）' },
+                productID: { type: 'number', description: '产品 ID（获取列表时使用）' },
                 browseType: {
                     type: 'string',
                     enum: ['all', 'unclosed', 'unresolved', 'toclosed', 'openedbyme', 'assigntome', 'resolvedbyme', 'assigntonull'],
                     description: '浏览类型: all-全部, unclosed-未关闭(默认), unresolved-未解决, toclosed-待关闭, openedbyme-我创建, assigntome-指派给我, resolvedbyme-我解决, assigntonull-未指派',
                 },
-                limit: {
-                    type: 'number',
-                    description: '返回数量限制，默认 20',
-                },
+                limit: { type: 'number', description: '返回数量限制，默认 20' },
             },
-            required: ['productID'],
-        },
-    },
-    {
-        name: 'zentao_get_bug',
-        description: '获取 Bug 详情',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                bugID: {
-                    type: 'number',
-                    description: 'Bug ID',
-                },
-            },
-            required: ['bugID'],
+            required: [],
         },
     },
     {
@@ -111,167 +92,60 @@ const tools = [
         inputSchema: {
             type: 'object',
             properties: {
-                product: {
-                    type: 'number',
-                    description: '产品 ID',
-                },
-                title: {
-                    type: 'string',
-                    description: 'Bug 标题',
-                },
-                severity: {
-                    type: 'number',
-                    enum: [1, 2, 3, 4],
-                    description: '严重程度: 1-致命, 2-严重, 3-一般, 4-轻微',
-                },
-                pri: {
-                    type: 'number',
-                    enum: [1, 2, 3, 4],
-                    description: '优先级: 1-紧急, 2-高, 3-中, 4-低',
-                },
+                product: { type: 'number', description: '产品 ID' },
+                title: { type: 'string', description: 'Bug 标题' },
+                severity: { type: 'number', enum: [1, 2, 3, 4], description: '严重程度: 1-致命, 2-严重, 3-一般, 4-轻微' },
+                pri: { type: 'number', enum: [1, 2, 3, 4], description: '优先级: 1-紧急, 2-高, 3-中, 4-低' },
                 type: {
                     type: 'string',
                     enum: ['codeerror', 'config', 'install', 'security', 'performance', 'standard', 'automation', 'designdefect', 'others'],
                     description: 'Bug 类型: codeerror-代码错误, config-配置相关, install-安装部署, security-安全相关, performance-性能问题, standard-标准规范, automation-测试脚本, designdefect-设计缺陷, others-其他',
                 },
-                branch: {
-                    type: 'number',
-                    description: '所属分支 ID',
-                },
-                module: {
-                    type: 'number',
-                    description: '模块 ID',
-                },
-                execution: {
-                    type: 'number',
-                    description: '所属执行 ID',
-                },
-                keywords: {
-                    type: 'string',
-                    description: '关键词',
-                },
-                os: {
-                    type: 'string',
-                    description: '操作系统',
-                },
-                browser: {
-                    type: 'string',
-                    description: '浏览器',
-                },
-                steps: {
-                    type: 'string',
-                    description: '重现步骤 (支持 HTML 格式，可内嵌图片)',
-                },
-                task: {
-                    type: 'number',
-                    description: '相关任务 ID',
-                },
-                story: {
-                    type: 'number',
-                    description: '相关需求 ID',
-                },
-                deadline: {
-                    type: 'string',
-                    description: '截止日期，格式 YYYY-MM-DD',
-                },
-                openedBuild: {
-                    type: 'array',
-                    items: { type: 'string' },
-                    description: '影响版本，如 ["trunk"]',
-                },
-                assignedTo: {
-                    type: 'string',
-                    description: '指派给（用户账号）',
-                },
-                project: {
-                    type: 'number',
-                    description: '项目 ID',
-                },
+                steps: { type: 'string', description: '重现步骤 (支持 HTML 格式)' },
+                assignedTo: { type: 'string', description: '指派给（用户账号）' },
+                openedBuild: { type: 'array', items: { type: 'string' }, description: '影响版本，如 ["trunk"]' },
+                module: { type: 'number', description: '模块 ID' },
+                story: { type: 'number', description: '相关需求 ID' },
+                project: { type: 'number', description: '项目 ID' },
             },
             required: ['product', 'title', 'severity', 'pri', 'type'],
         },
     },
     {
-        name: 'zentao_resolve_bug',
-        description: '解决 Bug',
+        name: 'zentao_bug_action',
+        description: 'Bug 操作：解决或关闭',
         inputSchema: {
             type: 'object',
             properties: {
-                id: {
-                    type: 'number',
-                    description: 'Bug ID',
-                },
+                id: { type: 'number', description: 'Bug ID' },
+                action: { type: 'string', enum: ['resolve', 'close'], description: '操作类型: resolve-解决, close-关闭' },
                 resolution: {
                     type: 'string',
                     enum: ['bydesign', 'duplicate', 'external', 'fixed', 'notrepro', 'postponed', 'willnotfix'],
-                    description: '解决方案: fixed-已修复, bydesign-设计如此, duplicate-重复, external-外部原因, notrepro-无法重现, postponed-延期, willnotfix-不予解决',
+                    description: '解决方案（resolve时必填）: fixed-已修复, bydesign-设计如此, duplicate-重复, external-外部原因, notrepro-无法重现, postponed-延期, willnotfix-不予解决',
                 },
-                resolvedBuild: {
-                    type: 'string',
-                    description: '解决版本',
-                },
-                comment: {
-                    type: 'string',
-                    description: '备注',
-                },
+                comment: { type: 'string', description: '备注' },
             },
-            required: ['id', 'resolution'],
-        },
-    },
-    {
-        name: 'zentao_close_bug',
-        description: '关闭 Bug',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                id: {
-                    type: 'number',
-                    description: 'Bug ID',
-                },
-                comment: {
-                    type: 'string',
-                    description: '关闭备注',
-                },
-            },
-            required: ['id'],
+            required: ['id', 'action'],
         },
     },
     // 需求相关工具
     {
-        name: 'zentao_get_stories',
-        description: '获取产品的需求列表。可按浏览类型筛选',
+        name: 'zentao_stories',
+        description: '查询需求。传 storyID 获取单个详情，传 productID 获取列表',
         inputSchema: {
             type: 'object',
             properties: {
-                productID: {
-                    type: 'number',
-                    description: '产品 ID',
-                },
+                storyID: { type: 'number', description: '需求 ID（获取详情时使用）' },
+                productID: { type: 'number', description: '产品 ID（获取列表时使用）' },
                 browseType: {
                     type: 'string',
                     enum: ['allstory', 'unclosed', 'draftstory', 'activestory', 'reviewingstory', 'changingstory', 'closedstory', 'openedbyme', 'assignedtome', 'reviewbyme'],
                     description: '浏览类型: allstory-全部, unclosed-未关闭(默认), draftstory-草稿, activestory-激活, reviewingstory-评审中, changingstory-变更中, closedstory-已关闭, openedbyme-我创建, assignedtome-指派给我, reviewbyme-我评审',
                 },
-                limit: {
-                    type: 'number',
-                    description: '返回数量限制，默认 20',
-                },
+                limit: { type: 'number', description: '返回数量限制，默认 20' },
             },
-            required: ['productID'],
-        },
-    },
-    {
-        name: 'zentao_get_story',
-        description: '获取需求详情',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                storyID: {
-                    type: 'number',
-                    description: '需求 ID',
-                },
-            },
-            required: ['storyID'],
+            required: [],
         },
     },
     {
@@ -280,73 +154,19 @@ const tools = [
         inputSchema: {
             type: 'object',
             properties: {
-                product: {
-                    type: 'number',
-                    description: '产品 ID',
-                },
-                title: {
-                    type: 'string',
-                    description: '需求标题',
-                },
+                product: { type: 'number', description: '产品 ID' },
+                title: { type: 'string', description: '需求标题' },
                 category: {
                     type: 'string',
                     enum: ['feature', 'interface', 'performance', 'safe', 'experience', 'improve', 'other'],
                     description: '需求类型: feature-功能, interface-接口, performance-性能, safe-安全, experience-体验, improve-改进, other-其他',
                 },
-                pri: {
-                    type: 'number',
-                    enum: [1, 2, 3, 4],
-                    description: '优先级: 1-紧急, 2-高, 3-中, 4-低',
-                },
-                spec: {
-                    type: 'string',
-                    description: `需求描述（必填）。建议按以下禅道模板格式填写：
-
-【目标】要达到的结果（例如：用户能在X页面完成Y操作）
-
-【范围】包含/不包含（例如：仅支持A端，不支持B端）
-
-【约束】兼容性、权限、性能、依赖系统、上线时间等限制条件
-
-【验收标准】可检查的标准（尽量可量化/可点检）
-
-【风险点】可能翻车的地方（初版可先写1-2条）
-
-【信息来源】相关文档/截图/旧需求链接/接口文档链接`,
-                },
-                reviewer: {
-                    type: 'array',
-                    items: { type: 'string' },
-                    description: '评审人账号列表（必填），如 ["york", "admin"]',
-                },
-                verify: {
-                    type: 'string',
-                    description: '验收标准',
-                },
-                estimate: {
-                    type: 'number',
-                    description: '预估工时（小时）',
-                },
-                module: {
-                    type: 'number',
-                    description: '模块 ID',
-                },
-                plan: {
-                    type: 'number',
-                    description: '计划 ID',
-                },
-                source: {
-                    type: 'string',
-                    description: '来源: customer-客户, user-用户, po-产品经理, market-市场',
-                },
-                sourceNote: {
-                    type: 'string',
-                    description: '来源备注',
-                },
-                keywords: {
-                    type: 'string',
-                    description: '关键词',
-                },
+                pri: { type: 'number', enum: [1, 2, 3, 4], description: '优先级: 1-紧急, 2-高, 3-中, 4-低' },
+                spec: { type: 'string', description: '需求描述（必填）' },
+                reviewer: { type: 'array', items: { type: 'string' }, description: '评审人账号列表（必填），如 ["york", "admin"]' },
+                verify: { type: 'string', description: '验收标准' },
+                estimate: { type: 'number', description: '预估工时（小时）' },
+                module: { type: 'number', description: '模块 ID' },
             },
             required: ['product', 'title', 'category', 'pri', 'spec', 'reviewer'],
         },
@@ -357,83 +177,55 @@ const tools = [
         inputSchema: {
             type: 'object',
             properties: {
-                id: {
-                    type: 'number',
-                    description: '需求 ID',
-                },
+                id: { type: 'number', description: '需求 ID' },
                 closedReason: {
                     type: 'string',
                     enum: ['done', 'subdivided', 'duplicate', 'postponed', 'willnotdo', 'cancel', 'bydesign'],
                     description: '关闭原因: done-已完成, subdivided-已细分, duplicate-重复, postponed-延期, willnotdo-不做, cancel-取消, bydesign-设计如此',
                 },
-                comment: {
-                    type: 'string',
-                    description: '备注',
-                },
+                comment: { type: 'string', description: '备注' },
             },
             required: ['id', 'closedReason'],
         },
     },
-    // 产品和项目相关工具
+    // 产品工具
     {
-        name: 'zentao_get_products',
-        description: '获取所有产品列表',
+        name: 'zentao_products',
+        description: '查询产品。传 productID 获取单个详情，否则获取列表',
         inputSchema: {
             type: 'object',
             properties: {
-                limit: {
-                    type: 'number',
-                    description: '返回数量限制，默认 100',
-                },
+                productID: { type: 'number', description: '产品 ID（获取详情时使用）' },
+                limit: { type: 'number', description: '返回数量限制，默认 100' },
             },
             required: [],
         },
     },
+    // 项目工具
     {
-        name: 'zentao_get_projects',
-        description: '获取所有项目列表',
+        name: 'zentao_projects',
+        description: '查询项目。传 projectID 获取单个详情，否则获取列表',
         inputSchema: {
             type: 'object',
             properties: {
-                limit: {
-                    type: 'number',
-                    description: '返回数量限制，默认 100',
-                },
+                projectID: { type: 'number', description: '项目 ID（获取详情时使用）' },
+                limit: { type: 'number', description: '返回数量限制，默认 100' },
             },
             required: [],
         },
     },
-    // 测试用例相关工具
+    // 测试用例工具
     {
-        name: 'zentao_get_testcases',
-        description: '获取产品的测试用例列表',
+        name: 'zentao_testcases',
+        description: '查询测试用例。传 caseID 获取单个详情，传 productID 获取列表',
         inputSchema: {
             type: 'object',
             properties: {
-                productID: {
-                    type: 'number',
-                    description: '产品 ID',
-                },
-                limit: {
-                    type: 'number',
-                    description: '返回数量限制，默认 100',
-                },
+                caseID: { type: 'number', description: '用例 ID（获取详情时使用）' },
+                productID: { type: 'number', description: '产品 ID（获取列表时使用）' },
+                limit: { type: 'number', description: '返回数量限制，默认 100' },
             },
-            required: ['productID'],
-        },
-    },
-    {
-        name: 'zentao_get_testcase',
-        description: '获取测试用例详情',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                caseID: {
-                    type: 'number',
-                    description: '用例 ID',
-                },
-            },
-            required: ['caseID'],
+            required: [],
         },
     },
     {
@@ -442,14 +234,8 @@ const tools = [
         inputSchema: {
             type: 'object',
             properties: {
-                product: {
-                    type: 'number',
-                    description: '产品 ID',
-                },
-                title: {
-                    type: 'string',
-                    description: '用例标题',
-                },
+                product: { type: 'number', description: '产品 ID' },
+                title: { type: 'string', description: '用例标题' },
                 type: {
                     type: 'string',
                     enum: ['feature', 'performance', 'config', 'install', 'security', 'interface', 'unit', 'other'],
@@ -460,140 +246,31 @@ const tools = [
                     items: {
                         type: 'object',
                         properties: {
-                            desc: {
-                                type: 'string',
-                                description: '步骤描述',
-                            },
-                            expect: {
-                                type: 'string',
-                                description: '期望结果',
-                            },
+                            desc: { type: 'string', description: '步骤描述' },
+                            expect: { type: 'string', description: '期望结果' },
                         },
                         required: ['desc', 'expect'],
                     },
                     description: '用例步骤',
                 },
-                pri: {
-                    type: 'number',
-                    enum: [1, 2, 3, 4],
-                    description: '优先级: 1-高, 2-中, 3-低, 4-最低',
-                },
-                stage: {
-                    type: 'string',
-                    enum: ['unittest', 'feature', 'intergrate', 'system', 'smoke', 'bvt'],
-                    description: '适用阶段: unittest-单元测试, feature-功能测试, intergrate-集成测试, system-系统测试, smoke-冒烟测试, bvt-版本验证',
-                },
-                precondition: {
-                    type: 'string',
-                    description: '前置条件',
-                },
-                module: {
-                    type: 'number',
-                    description: '所属模块 ID',
-                },
-                story: {
-                    type: 'number',
-                    description: '相关需求 ID',
-                },
-                keywords: {
-                    type: 'string',
-                    description: '关键词',
-                },
+                pri: { type: 'number', enum: [1, 2, 3, 4], description: '优先级: 1-高, 2-中, 3-低, 4-最低' },
+                precondition: { type: 'string', description: '前置条件' },
+                story: { type: 'number', description: '相关需求 ID' },
             },
             required: ['product', 'title', 'type', 'steps'],
         },
     },
-    // Bug 更新相关工具
+    // 用户工具
     {
-        name: 'zentao_update_bug',
-        description: '更新 Bug 信息',
+        name: 'zentao_users',
+        description: '查询用户。传 userID 获取单个详情，传 me=true 获取当前用户，否则获取列表',
         inputSchema: {
             type: 'object',
             properties: {
-                id: { type: 'number', description: 'Bug ID' },
-                title: { type: 'string', description: 'Bug 标题' },
-                severity: { type: 'number', enum: [1, 2, 3, 4], description: '严重程度' },
-                pri: { type: 'number', enum: [1, 2, 3, 4], description: '优先级' },
-                type: { type: 'string', description: 'Bug 类型' },
-                steps: { type: 'string', description: '重现步骤' },
-                module: { type: 'number', description: '模块 ID' },
-                deadline: { type: 'string', description: '截止日期 YYYY-MM-DD' },
-            },
-            required: ['id'],
-        },
-    },
-    // 需求更新/变更相关工具
-    {
-        name: 'zentao_update_story',
-        description: '更新需求信息（不含标题和描述）',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                id: { type: 'number', description: '需求 ID' },
-                module: { type: 'number', description: '模块 ID' },
-                source: { type: 'string', description: '来源' },
-                sourceNote: { type: 'string', description: '来源备注' },
-                pri: { type: 'number', enum: [1, 2, 3, 4], description: '优先级' },
-                category: { type: 'string', description: '需求类型' },
-                estimate: { type: 'number', description: '预计工时' },
-                keywords: { type: 'string', description: '关键词' },
-            },
-            required: ['id'],
-        },
-    },
-    // 产品详情/创建/更新相关工具
-    {
-        name: 'zentao_get_product',
-        description: '获取产品详情',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                productID: { type: 'number', description: '产品 ID' },
-            },
-            required: ['productID'],
-        },
-    },
-    // 项目详情/创建/更新相关工具
-    {
-        name: 'zentao_get_project',
-        description: '获取项目详情',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                projectID: { type: 'number', description: '项目 ID' },
-            },
-            required: ['projectID'],
-        },
-    },
-    // 用户相关工具
-    {
-        name: 'zentao_get_users',
-        description: '获取用户列表',
-        inputSchema: {
-            type: 'object',
-            properties: {
+                userID: { type: 'number', description: '用户 ID（获取详情时使用）' },
+                me: { type: 'boolean', description: '获取当前登录用户信息' },
                 limit: { type: 'number', description: '返回数量限制，默认 100' },
             },
-            required: [],
-        },
-    },
-    {
-        name: 'zentao_get_user',
-        description: '获取用户详情',
-        inputSchema: {
-            type: 'object',
-            properties: {
-                userID: { type: 'number', description: '用户 ID' },
-            },
-            required: ['userID'],
-        },
-    },
-    {
-        name: 'zentao_get_my_profile',
-        description: '获取当前登录用户信息',
-        inputSchema: {
-            type: 'object',
-            properties: {},
             required: [],
         },
     },
@@ -617,250 +294,155 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
         let result;
         switch (name) {
-            // Bug 相关
-            case 'zentao_get_bugs': {
-                const { productID, browseType, limit } = args;
-                result = await zentaoClient.getBugs(productID, browseType, limit);
-                break;
-            }
-            case 'zentao_get_bug': {
-                const { bugID } = args;
-                result = await zentaoClient.getBug(bugID);
-                if (!result) {
-                    return {
-                        content: [{ type: 'text', text: `Bug #${bugID} 不存在或无权限查看` }],
-                        isError: true,
-                    };
+            // Bug 查询（列表或详情）
+            case 'zentao_bugs': {
+                const { bugID, productID, browseType, limit } = args;
+                if (bugID) {
+                    result = await zentaoClient.getBug(bugID);
+                    if (!result) {
+                        return { content: [{ type: 'text', text: `Bug #${bugID} 不存在或无权限查看` }], isError: true };
+                    }
+                }
+                else if (productID) {
+                    result = await zentaoClient.getBugs(productID, browseType, limit);
+                }
+                else {
+                    return { content: [{ type: 'text', text: '请提供 bugID 或 productID' }], isError: true };
                 }
                 break;
             }
+            // 创建 Bug
             case 'zentao_create_bug': {
-                const { product, title, severity, pri, type, branch, module, execution, keywords, os, browser, steps, task, story, deadline, openedBuild, assignedTo, project } = args;
-                result = await zentaoClient.createBug({
-                    product,
-                    title,
-                    severity,
-                    pri,
-                    type,
-                    branch,
-                    module,
-                    execution,
-                    keywords,
-                    os,
-                    browser,
-                    steps,
-                    task,
-                    story,
-                    deadline,
-                    openedBuild,
-                    assignedTo,
-                    project,
-                });
+                const { product, title, severity, pri, type, steps, assignedTo, openedBuild, module, story, project } = args;
+                result = await zentaoClient.createBug({ product, title, severity, pri, type, steps, assignedTo, openedBuild, module, story, project });
                 break;
             }
-            case 'zentao_resolve_bug': {
-                const { id, resolution, resolvedBuild, comment } = args;
-                const success = await zentaoClient.resolveBug({ id, resolution, resolvedBuild, comment });
-                result = {
-                    success,
-                    message: success ? `Bug #${id} 已解决` : `Bug #${id} 解决失败`,
-                };
-                break;
-            }
-            case 'zentao_close_bug': {
-                const { id, comment } = args;
-                const success = await zentaoClient.closeBug({ id, comment });
-                result = {
-                    success,
-                    message: success ? `Bug #${id} 已关闭` : `Bug #${id} 关闭失败`,
-                };
-                break;
-            }
-            // 需求相关
-            case 'zentao_get_stories': {
-                const { productID, browseType, limit } = args;
-                result = await zentaoClient.getStories(productID, browseType, limit);
-                break;
-            }
-            case 'zentao_get_story': {
-                const { storyID } = args;
-                result = await zentaoClient.getStory(storyID);
-                if (!result) {
-                    return {
-                        content: [{ type: 'text', text: `需求 #${storyID} 不存在或无权限查看` }],
-                        isError: true,
-                    };
+            // Bug 操作（解决/关闭）
+            case 'zentao_bug_action': {
+                const { id, action, resolution, comment } = args;
+                let success;
+                if (action === 'resolve') {
+                    if (!resolution) {
+                        return { content: [{ type: 'text', text: '解决 Bug 时必须提供 resolution' }], isError: true };
+                    }
+                    success = await zentaoClient.resolveBug({ id, resolution, comment });
+                    result = { success, message: success ? `Bug #${id} 已解决` : `Bug #${id} 解决失败` };
+                }
+                else {
+                    success = await zentaoClient.closeBug({ id, comment });
+                    result = { success, message: success ? `Bug #${id} 已关闭` : `Bug #${id} 关闭失败` };
                 }
                 break;
             }
-            case 'zentao_create_story': {
-                const { product, title, category, pri, spec, reviewer, verify, estimate, module, plan, source, sourceNote, keywords } = args;
-                result = await zentaoClient.createStory({
-                    product,
-                    title,
-                    category,
-                    pri,
-                    spec,
-                    reviewer,
-                    verify,
-                    estimate,
-                    module,
-                    plan,
-                    source,
-                    sourceNote,
-                    keywords,
-                });
+            // 需求查询（列表或详情）
+            case 'zentao_stories': {
+                const { storyID, productID, browseType, limit } = args;
+                if (storyID) {
+                    result = await zentaoClient.getStory(storyID);
+                    if (!result) {
+                        return { content: [{ type: 'text', text: `需求 #${storyID} 不存在或无权限查看` }], isError: true };
+                    }
+                }
+                else if (productID) {
+                    result = await zentaoClient.getStories(productID, browseType, limit);
+                }
+                else {
+                    return { content: [{ type: 'text', text: '请提供 storyID 或 productID' }], isError: true };
+                }
                 break;
             }
+            // 创建需求
+            case 'zentao_create_story': {
+                const { product, title, category, pri, spec, reviewer, verify, estimate, module } = args;
+                result = await zentaoClient.createStory({ product, title, category, pri, spec, reviewer, verify, estimate, module });
+                break;
+            }
+            // 关闭需求
             case 'zentao_close_story': {
                 const { id, closedReason, comment } = args;
                 const success = await zentaoClient.closeStory({ id, closedReason, comment });
-                result = {
-                    success,
-                    message: success ? `需求 #${id} 已关闭` : `需求 #${id} 关闭失败`,
-                };
+                result = { success, message: success ? `需求 #${id} 已关闭` : `需求 #${id} 关闭失败` };
                 break;
             }
-            // 产品和项目相关
-            case 'zentao_get_products': {
-                const { limit } = args || {};
-                result = await zentaoClient.getProducts(limit);
-                break;
-            }
-            case 'zentao_get_projects': {
-                const { limit } = args || {};
-                result = await zentaoClient.getProjects(limit);
-                break;
-            }
-            // 测试用例相关
-            case 'zentao_get_testcases': {
+            // 产品查询（列表或详情）
+            case 'zentao_products': {
                 const { productID, limit } = args;
-                result = await zentaoClient.getTestCases(productID, limit);
-                break;
-            }
-            case 'zentao_get_testcase': {
-                const { caseID } = args;
-                result = await zentaoClient.getTestCase(caseID);
-                if (!result) {
-                    return {
-                        content: [{ type: 'text', text: `测试用例 #${caseID} 不存在或无权限查看` }],
-                        isError: true,
-                    };
+                if (productID) {
+                    result = await zentaoClient.getProduct(productID);
+                    if (!result) {
+                        return { content: [{ type: 'text', text: `产品 #${productID} 不存在或无权限查看` }], isError: true };
+                    }
+                }
+                else {
+                    result = await zentaoClient.getProducts(limit);
                 }
                 break;
             }
+            // 项目查询（列表或详情）
+            case 'zentao_projects': {
+                const { projectID, limit } = args;
+                if (projectID) {
+                    result = await zentaoClient.getProject(projectID);
+                    if (!result) {
+                        return { content: [{ type: 'text', text: `项目 #${projectID} 不存在或无权限查看` }], isError: true };
+                    }
+                }
+                else {
+                    result = await zentaoClient.getProjects(limit);
+                }
+                break;
+            }
+            // 测试用例查询（列表或详情）
+            case 'zentao_testcases': {
+                const { caseID, productID, limit } = args;
+                if (caseID) {
+                    result = await zentaoClient.getTestCase(caseID);
+                    if (!result) {
+                        return { content: [{ type: 'text', text: `测试用例 #${caseID} 不存在或无权限查看` }], isError: true };
+                    }
+                }
+                else if (productID) {
+                    result = await zentaoClient.getTestCases(productID, limit);
+                }
+                else {
+                    return { content: [{ type: 'text', text: '请提供 caseID 或 productID' }], isError: true };
+                }
+                break;
+            }
+            // 创建测试用例
             case 'zentao_create_testcase': {
-                const { product, title, type, steps, pri, stage, precondition, module, story, keywords } = args;
-                result = await zentaoClient.createTestCase({
-                    product,
-                    title,
-                    type,
-                    steps,
-                    pri,
-                    stage,
-                    precondition,
-                    module,
-                    story,
-                    keywords,
-                });
+                const { product, title, type, steps, pri, precondition, story } = args;
+                result = await zentaoClient.createTestCase({ product, title, type, steps, pri, precondition, story });
                 break;
             }
-            // Bug 更新相关
-            case 'zentao_update_bug': {
-                const { id, title, severity, pri, type, steps, module, deadline } = args;
-                result = await zentaoClient.updateBug({ id, title, severity, pri, type, steps, module, deadline });
-                if (!result) {
-                    return {
-                        content: [{ type: 'text', text: `Bug #${id} 更新失败` }],
-                        isError: true,
-                    };
+            // 用户查询（列表/详情/当前用户）
+            case 'zentao_users': {
+                const { userID, me, limit } = args;
+                if (me) {
+                    result = await zentaoClient.getMyProfile();
+                    if (!result) {
+                        return { content: [{ type: 'text', text: '获取当前用户信息失败' }], isError: true };
+                    }
                 }
-                break;
-            }
-            // 需求更新/变更相关
-            case 'zentao_update_story': {
-                const { id, module, source, sourceNote, pri, category, estimate, keywords } = args;
-                result = await zentaoClient.updateStory({ id, module, source, sourceNote, pri, category, estimate, keywords });
-                if (!result) {
-                    return {
-                        content: [{ type: 'text', text: `需求 #${id} 更新失败` }],
-                        isError: true,
-                    };
+                else if (userID) {
+                    result = await zentaoClient.getUser(userID);
+                    if (!result) {
+                        return { content: [{ type: 'text', text: `用户 #${userID} 不存在或无权限查看` }], isError: true };
+                    }
                 }
-                break;
-            }
-            // 产品详情/创建/更新相关
-            case 'zentao_get_product': {
-                const { productID } = args;
-                result = await zentaoClient.getProduct(productID);
-                if (!result) {
-                    return {
-                        content: [{ type: 'text', text: `产品 #${productID} 不存在或无权限查看` }],
-                        isError: true,
-                    };
-                }
-                break;
-            }
-            // 项目详情/创建/更新相关
-            case 'zentao_get_project': {
-                const { projectID } = args;
-                result = await zentaoClient.getProject(projectID);
-                if (!result) {
-                    return {
-                        content: [{ type: 'text', text: `项目 #${projectID} 不存在或无权限查看` }],
-                        isError: true,
-                    };
-                }
-                break;
-            }
-            // 用户相关
-            case 'zentao_get_users': {
-                const { limit } = args || {};
-                result = await zentaoClient.getUsers(limit);
-                break;
-            }
-            case 'zentao_get_user': {
-                const { userID } = args;
-                result = await zentaoClient.getUser(userID);
-                if (!result) {
-                    return {
-                        content: [{ type: 'text', text: `用户 #${userID} 不存在或无权限查看` }],
-                        isError: true,
-                    };
-                }
-                break;
-            }
-            case 'zentao_get_my_profile': {
-                result = await zentaoClient.getMyProfile();
-                if (!result) {
-                    return {
-                        content: [{ type: 'text', text: '获取当前用户信息失败' }],
-                        isError: true,
-                    };
+                else {
+                    result = await zentaoClient.getUsers(limit);
                 }
                 break;
             }
             default:
-                return {
-                    content: [{ type: 'text', text: `未知工具: ${name}` }],
-                    isError: true,
-                };
+                return { content: [{ type: 'text', text: `未知工具: ${name}` }], isError: true };
         }
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(result, null, 2),
-                },
-            ],
-        };
+        return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : '未知错误';
-        return {
-            content: [{ type: 'text', text: `操作失败: ${errorMessage}` }],
-            isError: true,
-        };
+        return { content: [{ type: 'text', text: `操作失败: ${errorMessage}` }], isError: true };
     }
 });
 // ==================== 启动服务器 ====================
