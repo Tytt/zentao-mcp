@@ -182,7 +182,22 @@ const tools: Tool[] = [
           description: '需求类型: feature-功能, interface-接口, performance-性能, safe-安全, experience-体验, improve-改进, other-其他',
         },
         pri: { type: 'number', enum: [1, 2, 3, 4], description: '优先级: 1-紧急, 2-高, 3-中, 4-低' },
-        spec: { type: 'string', description: '需求描述（必填）' },
+        spec: {
+          type: 'string',
+          description: `需求描述（必填）。建议按以下禅道模板格式填写：
+
+【目标】要达到的结果（例如：用户能在X页面完成Y操作）
+
+【范围】包含/不包含（例如：仅支持A端，不支持B端）
+
+【约束】兼容性、权限、性能、依赖系统、上线时间等限制条件
+
+【验收标准】可检查的标准（尽量可量化/可点检）
+
+【风险点】可能翻车的地方（初版可先写1-2条）
+
+【信息来源】相关文档/截图/旧需求链接/接口文档链接`,
+        },
         reviewer: { type: 'array', items: { type: 'string' }, description: '评审人账号列表（必填），如 ["york", "admin"]' },
         verify: { type: 'string', description: '验收标准' },
         estimate: { type: 'number', description: '预估工时（小时）' },
