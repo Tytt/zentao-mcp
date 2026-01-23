@@ -5,6 +5,7 @@
 import axios from 'axios';
 import https from 'https';
 import CryptoJS from 'crypto-js';
+import FormData from 'form-data';
 /**
  * 禅道 API 客户端类
  * 提供与禅道系统交互的所有方法
@@ -17,7 +18,9 @@ export class ZentaoClient {
     // 内置 API 认证相关属性
     legacySessionID = '';
     legacySessionName = 'zentaosid';
+    legacyRand = 0;
     isLegacyLoggedIn = false;
+    legacyCookies = [];
     /**
      * 创建禅道客户端实例
      * @param config - 禅道配置
@@ -1378,29 +1381,62 @@ export class ZentaoClient {
     /**
      * 确保内置 API 已登录
      * 内置 API 使用不同的认证方式：
-     * 1. 获取 sessionID: GET /api-getsessionid.json
-     * 2. 用户登录: POST /user-login.json?zentaosid=xxx
+     * 1. 获取 sessionID 和 rand: GET /index.php?m=api&f=getSessionID&t=json
+     * 2. 用户登录: POST /index.php?m=user&f=login&t=json&zentaosid=xxx
+     *    密码加密: md5(md5(password) + rand)
      */
     async ensureLegacyLogin() {
         if (this.isLegacyLoggedIn) {
             return;
         }
         try {
-            // 1. 获取 sessionID
-            const sessionResp = await this.http.get('/api-getsessionid.json');
-            const sessionData = sessionResp.data.data || sessionResp.data;
-            this.legacySessionID = sessionData.sessionID || sessionData;
+            // 1. 获取 sessionID 和 rand
+            const sessionResp = await this.http.get('/index.php?m=api&f=getSessionID&t=json');
+            this.handleLegacyCookies(sessionResp);
+            let sessionData = sessionResp.data;
+            if (typeof sessionData.data === 'string') {
+                sessionData = JSON.parse(sessionData.data);
+            }
+            else if (sessionData.data) {
+                sessionData = sessionData.data;
+            }
+            this.legacySessionID = sessionData.sessionID;
             this.legacySessionName = sessionData.sessionName || 'zentaosid';
-            // 2. 用户登录（内置 API 使用明文密码）
-            await this.http.post(`/user-login.json?${this.legacySessionName}=${this.legacySessionID}`, {
-                account: this.config.account,
-                password: this.config.password,
+            this.legacyRand = sessionData.rand || 0;
+            // 2. 用户登录，密码使用 md5(md5(password) + rand) 加密
+            const passwordMd5 = CryptoJS.MD5(this.config.password).toString();
+            const encryptedPassword = CryptoJS.MD5(passwordMd5 + this.legacyRand).toString();
+            const loginResp = await this.http.post(`/index.php?m=user&f=login&t=json&${this.legacySessionName}=${this.legacySessionID}`, `account=${this.config.account}&password=${encryptedPassword}&verifyRand=${this.legacyRand}`, {
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Cookie': this.legacyCookies.join('; '),
+                },
             });
+            this.handleLegacyCookies(loginResp);
             this.isLegacyLoggedIn = true;
         }
         catch (error) {
             console.error('内置 API 登录失败:', error);
             throw new Error(`内置 API 登录失败: ${error instanceof Error ? error.message : '未知错误'}`);
+        }
+    }
+    /**
+     * 处理内置 API 响应中的 cookies
+     */
+    handleLegacyCookies(response) {
+        const setCookies = response.headers['set-cookie'];
+        if (setCookies) {
+            setCookies.forEach((c) => {
+                const name = c.split('=')[0];
+                const value = c.split(';')[0];
+                const idx = this.legacyCookies.findIndex((x) => x.startsWith(name + '='));
+                if (idx >= 0) {
+                    this.legacyCookies[idx] = value;
+                }
+                else {
+                    this.legacyCookies.push(value);
+                }
+            });
         }
     }
     /**
@@ -1411,11 +1447,17 @@ export class ZentaoClient {
     async legacyGet(path) {
         await this.ensureLegacyLogin();
         const sep = path.includes('?') ? '&' : '?';
-        const response = await this.http.get(`${path}${sep}${this.legacySessionName}=${this.legacySessionID}`);
+        const response = await this.http.get(`${path}${sep}${this.legacySessionName}=${this.legacySessionID}`, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Cookie': this.legacyCookies.join('; '),
+            },
+        });
+        this.handleLegacyCookies(response);
         return response.data;
     }
     /**
-     * 内置 API POST 请求
+     * 内置 API POST 请求 (JSON 格式)
      * @param path - 请求路径
      * @param data - 请求数据
      * @returns 响应数据
@@ -1423,48 +1465,57 @@ export class ZentaoClient {
     async legacyPost(path, data) {
         await this.ensureLegacyLogin();
         const sep = path.includes('?') ? '&' : '?';
-        const response = await this.http.post(`${path}${sep}${this.legacySessionName}=${this.legacySessionID}`, data);
+        const response = await this.http.post(`${path}${sep}${this.legacySessionName}=${this.legacySessionID}`, data, {
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Cookie': this.legacyCookies.join('; '),
+                'Referer': this.config.url,
+            },
+        });
+        this.handleLegacyCookies(response);
+        return response.data;
+    }
+    /**
+     * 内置 API POST 请求 (multipart/form-data 格式)
+     * @param path - 请求路径
+     * @param form - FormData 对象
+     * @returns 响应数据
+     */
+    async legacyPostForm(path, form) {
+        await this.ensureLegacyLogin();
+        const sep = path.includes('?') ? '&' : '?';
+        const response = await this.http.post(`${path}${sep}${this.legacySessionName}=${this.legacySessionID}`, form, {
+            headers: {
+                ...form.getHeaders(),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Cookie': this.legacyCookies.join('; '),
+                'Referer': this.config.url,
+            },
+        });
+        this.handleLegacyCookies(response);
         return response.data;
     }
     // ==================== 文档相关方法（内置 API）====================
     /**
-     * 获取所有文档库列表
-     * @returns 文档库列表
+     * 获取文档空间数据（文档库、目录树、文档列表）
+     * @param type - 空间类型: product 或 project
+     * @param spaceID - 空间 ID（产品或项目 ID）
+     * @returns 文档空间数据
      */
-    async getDocLibs() {
-        const data = await this.legacyGet('/doc-allLibs.json');
-        return data.data || data.libs || [];
-    }
-    /**
-     * 获取产品/项目的文档库列表
-     * @param type - 对象类型: product 或 project
-     * @param objectID - 对象 ID（产品或项目 ID）
-     * @returns 文档库列表
-     */
-    async getObjectDocLibs(type, objectID) {
-        const data = await this.legacyGet(`/doc-objectLibs-${type}-${objectID}.json`);
-        return data.data || data.libs || [];
-    }
-    /**
-     * 获取文档库中的文档列表
-     * @param libID - 文档库 ID
-     * @param browseType - 浏览类型: all, draft, byediteddate 等
-     * @param moduleID - 模块 ID（可选）
-     * @returns 文档列表
-     */
-    async getDocs(libID, browseType = 'all', moduleID = 0) {
-        const data = await this.legacyGet(`/doc-browse-${libID}-${browseType}-${moduleID}.json`);
-        return data.data || data.docs || [];
+    async getDocSpaceData(type, spaceID) {
+        const data = await this.legacyGet(`/index.php?m=doc&f=ajaxGetSpaceData&type=${type}&spaceID=${spaceID}&picks=`);
+        return data;
     }
     /**
      * 获取文档详情
      * @param docID - 文档 ID
+     * @param version - 版本号（0 表示最新版本）
      * @returns 文档详情
      */
-    async getDoc(docID) {
+    async getDoc(docID, version = 0) {
         try {
-            const data = await this.legacyGet(`/doc-view-${docID}.json`);
-            return data.data || data.doc || null;
+            const data = await this.legacyGet(`/index.php?m=doc&f=ajaxGetDoc&docID=${docID}&version=${version}`);
+            return data || null;
         }
         catch {
             return null;
@@ -1473,22 +1524,34 @@ export class ZentaoClient {
     /**
      * 创建文档
      * @param params - 创建文档参数
-     * @returns 创建的文档
+     * @returns 创建结果
      */
     async createDoc(params) {
-        const data = {
-            title: params.title,
-            type: params.type || 'text',
-            content: params.content || '',
-        };
-        if (params.url !== undefined)
-            data.url = params.url;
-        if (params.keywords !== undefined)
-            data.keywords = params.keywords;
-        if (params.module !== undefined)
-            data.module = params.module;
-        const result = await this.legacyPost(`/doc-create-${params.lib}.json`, data);
-        return result.data || result.doc || result;
+        const form = new FormData();
+        form.append('title', params.title);
+        form.append('content', params.content || '');
+        form.append('lib', String(params.lib));
+        form.append('module', String(params.module || 0));
+        form.append('parent', 'm_0');
+        form.append('status', 'normal');
+        form.append('contentType', 'doc');
+        form.append('type', params.type || 'text');
+        form.append('acl', 'open');
+        form.append('space', 'product');
+        form.append('product', '1');
+        form.append('uid', `doc${Date.now()}`);
+        form.append('template', '0');
+        form.append('mailto[]', '');
+        form.append('contactList', '');
+        form.append('groups[]', '');
+        form.append('users[]', '');
+        if (params.keywords)
+            form.append('keywords', params.keywords);
+        const result = await this.legacyPostForm(`/index.php?m=doc&f=create&objectType=product&objectID=1&libID=${params.lib}&moduleID=${params.module || 0}`, form);
+        if (result.result !== 'success') {
+            throw new Error(result.message || '创建文档失败');
+        }
+        return { id: result.id, doc: result.doc };
     }
     /**
      * 编辑文档
@@ -1496,19 +1559,77 @@ export class ZentaoClient {
      * @returns 更新后的文档
      */
     async editDoc(params) {
-        const data = {};
+        const form = new FormData();
         if (params.title !== undefined)
-            data.title = params.title;
+            form.append('title', params.title);
         if (params.content !== undefined)
-            data.content = params.content;
+            form.append('content', params.content);
         if (params.keywords !== undefined)
-            data.keywords = params.keywords;
+            form.append('keywords', params.keywords);
+        // 必需的字段
+        form.append('lib', '1');
+        form.append('module', '0');
+        form.append('parent', '0');
+        form.append('status', 'normal');
+        form.append('contentType', 'doc');
+        form.append('type', 'text');
+        form.append('acl', 'open');
+        form.append('space', 'product');
+        form.append('uid', `doc${params.id}`);
+        form.append('files', '');
+        form.append('fromVersion', '1');
         try {
-            const result = await this.legacyPost(`/doc-edit-${params.id}.json`, data);
-            return result.data || result.doc || null;
+            const result = await this.legacyPostForm(`/index.php?m=doc&f=edit&docID=${params.id}`, form);
+            if (result.result !== 'success') {
+                throw new Error(result.message || '编辑文档失败');
+            }
+            return result.doc || null;
+        }
+        catch (error) {
+            console.error('编辑文档失败:', error);
+            return null;
+        }
+    }
+    // ==================== 文档目录相关方法（内置 API）====================
+    /**
+     * 创建文档目录
+     * @param params - 创建目录参数
+     * @returns 创建结果
+     */
+    async createDocModule(params) {
+        const form = new FormData();
+        form.append('name', params.name);
+        form.append('libID', String(params.libID));
+        form.append('parentID', String(params.parentID || 0));
+        form.append('objectID', String(params.objectID));
+        form.append('moduleType', 'doc');
+        form.append('isUpdate', 'false');
+        form.append('createType', 'child');
+        const result = await this.legacyPostForm('/index.php?m=tree&f=ajaxCreateModule', form);
+        if (result.result !== 'success') {
+            throw new Error(result.message || '创建目录失败');
+        }
+        return {
+            id: result.module?.id || 0,
+            name: result.module?.name || params.name
+        };
+    }
+    /**
+     * 编辑文档目录
+     * @param params - 编辑目录参数
+     * @returns 操作结果
+     */
+    async editDocModule(params) {
+        const form = new FormData();
+        form.append('root', String(params.root));
+        form.append('parent', String(params.parent || 0));
+        form.append('name', params.name);
+        try {
+            const result = await this.legacyPostForm(`/index.php?m=doc&f=editCatalog&moduleID=${params.moduleID}&type=doc`, form);
+            return result.result === 'success';
         }
         catch {
-            return null;
+            return false;
         }
     }
 }

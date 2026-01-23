@@ -2,7 +2,7 @@
  * 禅道 API 客户端
  * 封装禅道 REST API 的调用，支持 Bug 和需求的增删改查
  */
-import { ZentaoConfig, Bug, Story, Product, Project, CreateBugParams, ResolveBugParams, CloseBugParams, ActivateBugParams, UpdateBugParams, CreateStoryParams, CloseStoryParams, UpdateStoryParams, ChangeStoryParams, TestCase, TestCaseListResponse, CreateTestCaseParams, Task, CreateTaskParams, UpdateTaskParams, User, CreateUserParams, UpdateUserParams, Program, CreateProgramParams, UpdateProgramParams, Plan, CreatePlanParams, UpdatePlanParams, Release, Build, CreateBuildParams, UpdateBuildParams, Execution, CreateExecutionParams, UpdateExecutionParams, CreateProductParams, UpdateProductParams, CreateProjectParams, UpdateProjectParams, Doc, DocLib, CreateDocParams, EditDocParams } from './types.js';
+import { ZentaoConfig, Bug, Story, Product, Project, CreateBugParams, ResolveBugParams, CloseBugParams, ActivateBugParams, UpdateBugParams, CreateStoryParams, CloseStoryParams, UpdateStoryParams, ChangeStoryParams, TestCase, TestCaseListResponse, CreateTestCaseParams, Task, CreateTaskParams, UpdateTaskParams, User, CreateUserParams, UpdateUserParams, Program, CreateProgramParams, UpdateProgramParams, Plan, CreatePlanParams, UpdatePlanParams, Release, Build, CreateBuildParams, UpdateBuildParams, Execution, CreateExecutionParams, UpdateExecutionParams, CreateProductParams, UpdateProductParams, CreateProjectParams, UpdateProjectParams, Doc, DocSpaceData, CreateDocParams, EditDocParams, CreateDocModuleParams, EditDocModuleParams } from './types.js';
 /**
  * 禅道 API 客户端类
  * 提供与禅道系统交互的所有方法
@@ -14,7 +14,9 @@ export declare class ZentaoClient {
     private isLoggedIn;
     private legacySessionID;
     private legacySessionName;
+    private legacyRand;
     private isLegacyLoggedIn;
+    private legacyCookies;
     /**
      * 创建禅道客户端实例
      * @param config - 禅道配置
@@ -406,10 +408,15 @@ export declare class ZentaoClient {
     /**
      * 确保内置 API 已登录
      * 内置 API 使用不同的认证方式：
-     * 1. 获取 sessionID: GET /api-getsessionid.json
-     * 2. 用户登录: POST /user-login.json?zentaosid=xxx
+     * 1. 获取 sessionID 和 rand: GET /index.php?m=api&f=getSessionID&t=json
+     * 2. 用户登录: POST /index.php?m=user&f=login&t=json&zentaosid=xxx
+     *    密码加密: md5(md5(password) + rand)
      */
     private ensureLegacyLogin;
+    /**
+     * 处理内置 API 响应中的 cookies
+     */
+    private handleLegacyCookies;
     /**
      * 内置 API GET 请求
      * @param path - 请求路径
@@ -417,49 +424,62 @@ export declare class ZentaoClient {
      */
     private legacyGet;
     /**
-     * 内置 API POST 请求
+     * 内置 API POST 请求 (JSON 格式)
      * @param path - 请求路径
      * @param data - 请求数据
      * @returns 响应数据
      */
     private legacyPost;
     /**
-     * 获取所有文档库列表
-     * @returns 文档库列表
+     * 内置 API POST 请求 (multipart/form-data 格式)
+     * @param path - 请求路径
+     * @param form - FormData 对象
+     * @returns 响应数据
      */
-    getDocLibs(): Promise<DocLib[]>;
+    private legacyPostForm;
     /**
-     * 获取产品/项目的文档库列表
-     * @param type - 对象类型: product 或 project
-     * @param objectID - 对象 ID（产品或项目 ID）
-     * @returns 文档库列表
+     * 获取文档空间数据（文档库、目录树、文档列表）
+     * @param type - 空间类型: product 或 project
+     * @param spaceID - 空间 ID（产品或项目 ID）
+     * @returns 文档空间数据
      */
-    getObjectDocLibs(type: 'product' | 'project', objectID: number): Promise<DocLib[]>;
-    /**
-     * 获取文档库中的文档列表
-     * @param libID - 文档库 ID
-     * @param browseType - 浏览类型: all, draft, byediteddate 等
-     * @param moduleID - 模块 ID（可选）
-     * @returns 文档列表
-     */
-    getDocs(libID: number, browseType?: string, moduleID?: number): Promise<Doc[]>;
+    getDocSpaceData(type: 'product' | 'project', spaceID: number): Promise<DocSpaceData>;
     /**
      * 获取文档详情
      * @param docID - 文档 ID
+     * @param version - 版本号（0 表示最新版本）
      * @returns 文档详情
      */
-    getDoc(docID: number): Promise<Doc | null>;
+    getDoc(docID: number, version?: number): Promise<Doc | null>;
     /**
      * 创建文档
      * @param params - 创建文档参数
-     * @returns 创建的文档
+     * @returns 创建结果
      */
-    createDoc(params: CreateDocParams): Promise<Doc>;
+    createDoc(params: CreateDocParams): Promise<{
+        id: number;
+        doc: Doc;
+    }>;
     /**
      * 编辑文档
      * @param params - 编辑文档参数
      * @returns 更新后的文档
      */
     editDoc(params: EditDocParams): Promise<Doc | null>;
+    /**
+     * 创建文档目录
+     * @param params - 创建目录参数
+     * @returns 创建结果
+     */
+    createDocModule(params: CreateDocModuleParams): Promise<{
+        id: number;
+        name: string;
+    }>;
+    /**
+     * 编辑文档目录
+     * @param params - 编辑目录参数
+     * @returns 操作结果
+     */
+    editDocModule(params: EditDocModuleParams): Promise<boolean>;
 }
 //# sourceMappingURL=zentao-client.d.ts.map

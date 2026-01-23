@@ -995,4 +995,54 @@ export interface EditDocParams {
     /** 鍏抽敭璇?*/
     keywords?: string;
 }
+/** 鏂囨。鐩綍鑺傜偣 */
+export interface DocModule {
+    /** 鐩綍 ID */
+    id: number;
+    /** 鐩綍鍚嶇О */
+    name: string;
+    /** 鐖剁洰褰?ID */
+    parent: number;
+    /** 鎵€灞炴枃妗ｅ簱 ID */
+    root: number;
+    /** 璺緞 */
+    path?: string;
+    /** 灞傜骇 */
+    grade?: number;
+    /** 鎺掑簭 */
+    order?: number;
+    /** 瀛愮洰褰?*/
+    children?: DocModule[];
+}
+/** 鏂囨。绌洪棿鏁版嵁锛堝寘鍚枃妗ｅ簱鍜岀洰褰曟爲锛?*/
+export interface DocSpaceData {
+    /** 鏂囨。搴撳垪琛?*/
+    libs?: DocLib[];
+    /** 鐩綍鍒楄〃 */
+    modules?: DocModule[];
+    /** 鏂囨。鍒楄〃 */
+    docs?: Doc[];
+}
+/** 鍒涘缓鏂囨。鐩綍鍙傛暟 */
+export interface CreateDocModuleParams {
+    /** 鐩綍鍚嶇О */
+    name: string;
+    /** 鏂囨。搴?ID */
+    libID: number;
+    /** 鐖剁洰褰?ID锛? 涓烘牴鐩綍锛?*/
+    parentID?: number;
+    /** 瀵硅薄 ID锛堜骇鍝?椤圭洰 ID锛?*/
+    objectID: number;
+}
+/** 缂栬緫鏂囨。鐩綍鍙傛暟 */
+export interface EditDocModuleParams {
+    /** 鐩綍 ID */
+    moduleID: number;
+    /** 鐩綍鍚嶇О */
+    name: string;
+    /** 鏂囨。搴?ID */
+    root: number;
+    /** 鐖剁洰褰?ID */
+    parent?: number;
+}
 //# sourceMappingURL=types.d.ts.map

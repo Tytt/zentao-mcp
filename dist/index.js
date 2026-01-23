@@ -273,27 +273,31 @@ const tools = [
     // 文档工具
     {
         name: 'zentao_docs',
-        description: '文档操作。支持：获取文档库列表、获取文档列表、获取文档详情、创建/编辑文档',
+        description: '文档操作。支持：获取文档空间树、获取文档详情、创建/编辑文档、创建/编辑目录',
         inputSchema: {
             type: 'object',
             properties: {
                 action: {
                     type: 'string',
-                    enum: ['libs', 'list', 'view', 'create', 'edit'],
-                    description: '操作类型: libs-文档库列表, list-文档列表, view-文档详情, create-创建文档, edit-编辑文档',
+                    enum: ['tree', 'view', 'create', 'edit', 'createModule', 'editModule'],
+                    description: '操作类型: tree-获取文档空间树（包含目录和文档）, view-文档详情, create-创建文档, edit-编辑文档, createModule-创建目录, editModule-编辑目录',
                 },
-                // 查询参数
-                libID: { type: 'number', description: '文档库 ID（list/create 时使用）' },
+                // 空间查询参数
+                spaceType: { type: 'string', enum: ['product', 'project'], description: '空间类型（tree 时使用）' },
+                spaceID: { type: 'number', description: '空间 ID - 产品或项目 ID（tree 时使用）' },
+                // 文档参数
+                libID: { type: 'number', description: '文档库 ID（create/createModule 时使用）' },
                 docID: { type: 'number', description: '文档 ID（view/edit 时使用）' },
-                objectType: { type: 'string', enum: ['product', 'project'], description: '对象类型（获取特定产品/项目的文档库时使用）' },
-                objectID: { type: 'number', description: '对象 ID（产品或项目 ID）' },
-                browseType: { type: 'string', description: '浏览类型: all-全部(默认), draft-草稿' },
-                // 创建/编辑参数
+                moduleID: { type: 'number', description: '目录 ID（editModule/create 时指定所属目录）' },
+                // 创建/编辑文档参数
                 title: { type: 'string', description: '文档标题（create/edit 时使用）' },
                 content: { type: 'string', description: '文档内容（HTML 格式）' },
                 keywords: { type: 'string', description: '关键词' },
                 type: { type: 'string', enum: ['text', 'url'], description: '文档类型: text-富文本(默认), url-链接' },
                 url: { type: 'string', description: '外部链接（type=url 时使用）' },
+                // 目录参数
+                moduleName: { type: 'string', description: '目录名称（createModule/editModule 时使用）' },
+                parentID: { type: 'number', description: '父目录 ID（createModule 时使用，0 表示根目录）' },
             },
             required: ['action'],
         },
@@ -512,21 +516,14 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             }
             // 文档操作
             case 'zentao_docs': {
-                const { action, libID, docID, objectType, objectID, browseType, title, content, keywords, type, url } = args;
+                const { action, spaceType, spaceID, libID, docID, moduleID, title, content, keywords, type, url, moduleName, parentID } = args;
                 switch (action) {
-                    case 'libs':
-                        if (objectType && objectID) {
-                            result = await zentaoClient.getObjectDocLibs(objectType, objectID);
+                    case 'tree':
+                        // 获取文档空间树（包含文档库、目录和文档）
+                        if (!spaceType || !spaceID) {
+                            return { content: [{ type: 'text', text: '缺少必要参数: spaceType 和 spaceID' }], isError: true };
                         }
-                        else {
-                            result = await zentaoClient.getDocLibs();
-                        }
-                        break;
-                    case 'list':
-                        if (!libID) {
-                            return { content: [{ type: 'text', text: '缺少必要参数: libID（文档库 ID）' }], isError: true };
-                        }
-                        result = await zentaoClient.getDocs(libID, browseType);
+                        result = await zentaoClient.getDocSpaceData(spaceType, spaceID);
                         break;
                     case 'view':
                         if (!docID) {
@@ -548,6 +545,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                             content,
                             url,
                             keywords,
+                            module: moduleID,
                         });
                         break;
                     case 'edit':
@@ -557,6 +555,33 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                         result = await zentaoClient.editDoc({ id: docID, title, content, keywords });
                         if (!result) {
                             return { content: [{ type: 'text', text: `编辑文档 #${docID} 失败` }], isError: true };
+                        }
+                        break;
+                    case 'createModule':
+                        // 创建文档目录
+                        if (!libID || !moduleName || !spaceID) {
+                            return { content: [{ type: 'text', text: '缺少必要参数: libID（文档库 ID）、moduleName（目录名称）和 spaceID（产品/项目 ID）' }], isError: true };
+                        }
+                        result = await zentaoClient.createDocModule({
+                            name: moduleName,
+                            libID,
+                            parentID: parentID || 0,
+                            objectID: spaceID,
+                        });
+                        break;
+                    case 'editModule':
+                        // 编辑文档目录
+                        if (!moduleID || !moduleName || !libID) {
+                            return { content: [{ type: 'text', text: '缺少必要参数: moduleID（目录 ID）、moduleName（目录名称）和 libID（文档库 ID）' }], isError: true };
+                        }
+                        result = await zentaoClient.editDocModule({
+                            moduleID,
+                            name: moduleName,
+                            root: libID,
+                            parent: parentID,
+                        });
+                        if (!result) {
+                            return { content: [{ type: 'text', text: `编辑目录 #${moduleID} 失败` }], isError: true };
                         }
                         break;
                     default:
